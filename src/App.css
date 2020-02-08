@@ -1,0 +1,69 @@
+.mqtn.error.message {
+    color: red;
+}
+
+.inverted {
+    background-color: #323232 !important;
+}
+
+.paper {
+    background-image: url('./soft-wallpaper.png') !important;
+}
+
+@media print {
+    .mqtn.unprint {
+        display: none !important;
+    }
+    .mqtn.setlist.container {
+        -webkit-print-color-adjust: exact;
+        z-index: 1;
+        position: fixed;
+        top: 0;
+        left: 0;
+        zoom: 1.4 !important;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .mqtn.setlist.container {
+        /* zoom: 0.5 !important; */
+        transform: scale(0.5);
+		transform-origin: top left;
+    }
+}
+
+.mqtn.setlist.container {
+    font-size: 10px;
+    background-clip: border-box;
+    background-origin: border-box;
+    height: 842px;
+    width: 595px;
+    overflow: hidden;
+    padding: 20px;
+}
+
+.mqtn.setlist.container p {
+    line-height: 0;
+}
+
+.mqtn.setlist.container .mqtn.header h1 {
+    margin-bottom: 0.5rem;
+    font-size: 3em;
+}
+
+.mqtn.setlist.container .mqtn.sub.header {
+    margin-bottom: 0.5rem;
+    font-size: 1em;
+}
+
+.mqtn.setlist.container .grid .row {
+    padding-top: 0;
+}
+
+.mqtn.setlist.container .mqtn.content {
+    padding-top: 0;
+}
+
+.mqtn.setlist.container .list>.item .content {
+    font-size: 2em;
+}

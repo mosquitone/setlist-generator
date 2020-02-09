@@ -20,7 +20,6 @@ create setlist for mosquitone show.
     - Routing: [react-router-dom](https://reacttraining.com/react-router/web/guides/quick-start)
     - Form Control: [formik](https://github.com/jaredpalmer/formik)
     - Form Validation: [Yup](https://github.com/jquense/yup)
-    - Form Validation: [Yup](https://github.com/jquense/yup)
 
 ## Release
 

@@ -226,12 +226,10 @@ const ShowSetlist: React.FunctionComponent<RouteComponentProps<{ data: string }>
         <Menu.Item onClick={() => history.push({ pathname: "/new", search: `?from=${data}` })} name="edit"></Menu.Item>
         <Menu.Item onClick={() => window.print()} name="print"></Menu.Item>
       </Menu>
-      <Grid centered>
-        <Grid.Column>
-          <SetList {...formValues}
-          ></SetList>
-        </Grid.Column>
-      </Grid>
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+        <SetList {...formValues}
+        ></SetList>
+      </div>
     </>
   )
 }

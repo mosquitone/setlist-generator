@@ -26,9 +26,8 @@
 
 @media screen and (max-width: 480px) {
     .mqtn.setlist.container {
-        /* zoom: 0.5 !important; */
         transform: scale(0.5);
-		transform-origin: top left;
+		transform-origin: top center;
     }
 }
 

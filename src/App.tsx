@@ -48,7 +48,7 @@ const CreateFormSchema = Yup.object().shape({
 declare type CreateFormValues = Yup.InferType<typeof CreateFormSchema>;
 
 const FormValueSerializer = {
-  serialize: (values: CreateFormValues) =>  encodeURIComponent(Buffer.from(JSON.stringify(values, null, 4), "utf16le").toString("base64")),
+  serialize: (values: CreateFormValues) => encodeURIComponent(Buffer.from(JSON.stringify(values, null, 4), "utf16le").toString("base64")),
   deserialize: (serializedValues: string): CreateFormValues => JSON.parse(Buffer.from(decodeURIComponent(serializedValues), "base64").toString("utf16le")),
 }
 
@@ -65,7 +65,6 @@ const CreateFormInput: React.FunctionComponent<{ name: string, label: string, pl
 const CreateForm: React.FunctionComponent<RouteComponentProps> = ({ location }) => {
   const params = new URLSearchParams(location.search);
   const fromData = params.get('from');
-  debugger
   const loadValues = fromData ? FormValueSerializer.deserialize(fromData) : {};
 
   return (
@@ -209,12 +208,15 @@ const SetList: React.FunctionComponent<CreateFormValues> = ({ event, playings })
   )
 }
 
+
 const ShowSetlist: React.FunctionComponent<RouteComponentProps<{ data: string }>> = ({
   history,
   match: { params: { data } }
 }) => {
-  debugger
   const formValues: CreateFormValues = FormValueSerializer.deserialize(data);
+  const setlistSelectorId = "mqtn_setlist";
+  const imageURL = `/api/print?url=${encodeURIComponent(window.location.href)}&selector=${encodeURIComponent(`#${setlistSelectorId}`)}&filename=mosquitone_setlist&type=png`
+
   return (
     <>
       <Message className="mqtn unprint">
@@ -224,11 +226,14 @@ const ShowSetlist: React.FunctionComponent<RouteComponentProps<{ data: string }>
       </Message>
       <Menu className="mqtn unprint">
         <Menu.Item onClick={() => history.push({ pathname: "/new", search: `?from=${data}` })} name="edit"></Menu.Item>
+        <Menu.Item name="download" as="a" href={imageURL} target="_blank"></Menu.Item>
         <Menu.Item onClick={() => window.print()} name="print"></Menu.Item>
       </Menu>
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-        <SetList {...formValues}
-        ></SetList>
+        <div id={setlistSelectorId}>
+          <SetList {...formValues}
+          ></SetList>
+        </div>
       </div>
     </>
   )

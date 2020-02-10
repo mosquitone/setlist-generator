@@ -48,8 +48,8 @@ const CreateFormSchema = Yup.object().shape({
 declare type CreateFormValues = Yup.InferType<typeof CreateFormSchema>;
 
 const FormValueSerializer = {
-  serialize: (values: CreateFormValues) => btoa(JSON.stringify(values, null, 2)),
-  deserialize: (serializedValues: string): CreateFormValues => JSON.parse(atob((serializedValues))),
+  serialize: (values: CreateFormValues) =>  encodeURIComponent(Buffer.from(JSON.stringify(values, null, 4), "utf16le").toString("base64")),
+  deserialize: (serializedValues: string): CreateFormValues => JSON.parse(Buffer.from(decodeURIComponent(serializedValues), "base64").toString("utf16le")),
 }
 
 const CreateFormInput: React.FunctionComponent<{ name: string, label: string, placeholder: string, direction?: "row" | "column" }> = ({ name, label, placeholder, direction = "column" }) => (
@@ -65,6 +65,7 @@ const CreateFormInput: React.FunctionComponent<{ name: string, label: string, pl
 const CreateForm: React.FunctionComponent<RouteComponentProps> = ({ location }) => {
   const params = new URLSearchParams(location.search);
   const fromData = params.get('from');
+  debugger
   const loadValues = fromData ? FormValueSerializer.deserialize(fromData) : {};
 
   return (
@@ -212,6 +213,7 @@ const ShowSetlist: React.FunctionComponent<RouteComponentProps<{ data: string }>
   history,
   match: { params: { data } }
 }) => {
+  debugger
   const formValues: CreateFormValues = FormValueSerializer.deserialize(data);
   return (
     <>

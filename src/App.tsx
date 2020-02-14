@@ -1,7 +1,8 @@
 import { ErrorMessage, Field, FieldArray, Formik } from "formik";
-import React from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, Redirect, Route, RouteComponentProps, Switch, withRouter } from "react-router-dom";
-import { Button, Container, Form, Grid, Header, Icon, Label, Menu, Message, Segment, Transition } from "semantic-ui-react";
+import { Button, Container, Divider, Dropdown, Form, Grid, Header, Icon, Input, Label, Menu, Message, Modal, Popup, Segment, Transition } from "semantic-ui-react";
+import { setTimeout } from "timers";
 import * as Yup from "yup";
 import './App.css';
 import logo from './logo.png';
@@ -209,13 +210,118 @@ const SetList: React.FunctionComponent<CreateFormValues> = ({ event, playings })
 }
 
 
+const SharePanel: React.FunctionComponent<{
+  url: string,
+  message: string,
+  title: string,
+  signature?: boolean | string,
+}> = ({ url, message, title, signature }) => {
+
+  const urlInputRef = useRef<any>();
+  const selectURL = useCallback(() => {
+    const urlInput = urlInputRef.current;
+    if (urlInput) {
+      urlInput.focus();
+      urlInput.select();
+    }
+  }, []);
+
+  const [popupIsOpen, setPopupIsOpen] = useState(false);
+  const openPopup = useCallback(() => {
+    setPopupIsOpen(true);
+    setTimeout(() => {
+      setPopupIsOpen(false);
+    }, 1000);
+  }, []);
+
+  useEffect(selectURL, [url])
+
+  const supportShareAPI = (navigator as any).share
+
+  return <>
+    <Segment placeholder>
+      <Grid columns={supportShareAPI ? 2 : 1} stackable textAlign="center">
+        <Grid.Column verticalAlign="middle" textAlign="center">
+          <Header>Copy URL</Header>
+          <Input
+            readOnly
+            ref={urlInputRef}
+            size="large"
+            fluid
+            value={url}
+            action={
+              <Popup
+                open={popupIsOpen}
+                content="Copied!"
+                position="top center"
+                trigger={
+                  <Button  {...{
+                    color: 'teal',
+                    labelPosition: 'right',
+                    icon: 'copy',
+                    content: 'Copy',
+                    onClick: () => {
+                      selectURL();
+                      document.execCommand("copy");
+                      openPopup();
+                    }
+                  }}>
+                  </Button>
+
+                }
+              >
+              </Popup>
+            } />
+        </Grid.Column>
+        {supportShareAPI && <>
+          <Divider vertical>or</Divider>
+          <Grid.Column textAlign="center" verticalAlign="middle">
+            <Header>Share to Apps you want</Header>
+            <Button
+              icon="share"
+              content="Share"
+              color="blue"
+              size="big"
+              onClick={() => {
+                (navigator as any).share({
+                  title,
+                  url,
+                  text: message +
+                    "\n" +
+                    `${signature ? (typeof signature === "string" ? signature : "mosquitone setlist generator") : ""}`
+                })
+
+              }}
+            ></Button>
+          </Grid.Column>
+        </>
+        }
+      </Grid>
+    </Segment>
+  </>
+}
+
 const ShowSetlist: React.FunctionComponent<RouteComponentProps<{ data: string }>> = ({
   history,
   match: { params: { data } }
 }) => {
+
   const formValues: CreateFormValues = FormValueSerializer.deserialize(data);
   const setlistSelectorId = "mqtn_setlist";
-  const imageURL = `/api/print?url=${encodeURIComponent(window.location.href)}&selector=${encodeURIComponent(`#${setlistSelectorId}`)}&filename=mosquitone_setlist&type=png`
+  const currentURL = window.location.href;
+  const imageURL = `${window.location.origin}/api/print?url=${encodeURIComponent(currentURL)}&selector=${encodeURIComponent(`#${setlistSelectorId}`)}&filename=mosquitone_setlist&type=png`
+
+  const sharableURLs = [
+    {
+      name: "Page",
+      url: currentURL,
+    },
+    {
+      name: "Image",
+      url: imageURL,
+    },
+  ]
+  const [selectedURLIndex, setSelectedURLIndex] = useState(0);
 
   return (
     <>
@@ -228,6 +334,33 @@ const ShowSetlist: React.FunctionComponent<RouteComponentProps<{ data: string }>
         <Menu.Item onClick={() => history.push({ pathname: "/new", search: `?from=${data}` })} name="edit"></Menu.Item>
         <Menu.Item name="download" as="a" href={imageURL} target="_blank"></Menu.Item>
         <Menu.Item onClick={() => window.print()} name="print"></Menu.Item>
+        <Modal
+          trigger={
+            <Menu.Item name="share"></Menu.Item>
+          }
+        >
+          <Modal.Header>
+            Share Setlist{" "}
+            <Dropdown
+              simple
+              inline
+              size="small"
+              value={selectedURLIndex}
+              options={
+                sharableURLs.map(({ name }, idx) => ({ text: name, value: idx }))
+              }
+              onChange={(_, { value }) => setSelectedURLIndex((parseInt(value as string)))}
+            />
+          </Modal.Header>
+          <Modal.Content>
+            <SharePanel
+              url={sharableURLs[selectedURLIndex].url}
+              title={`mosquitone setlist for ${formValues.event.name}`}
+              message="I've created new setlist!"
+              signature
+            />
+          </Modal.Content>
+        </Modal>
       </Menu>
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
         <div id={setlistSelectorId}>

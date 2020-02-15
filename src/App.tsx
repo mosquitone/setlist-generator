@@ -48,9 +48,18 @@ const CreateFormSchema = Yup.object().shape({
 });
 declare type CreateFormValues = Yup.InferType<typeof CreateFormSchema>;
 
+
 const FormValueSerializer = {
   serialize: (values: CreateFormValues) => encodeURIComponent(Buffer.from(JSON.stringify(values, null, 4), "utf16le").toString("base64")),
   deserialize: (serializedValues: string): CreateFormValues => JSON.parse(Buffer.from(decodeURIComponent(serializedValues), "base64").toString("utf16le")),
+}
+
+const FormValuePersistanceManager = {
+  KEY: "setlist_create_form_value_v0",
+  canRestore: () => localStorage.getItem(FormValuePersistanceManager.KEY) !== null,
+  store: (values: CreateFormValues) => localStorage.setItem(FormValuePersistanceManager.KEY, FormValueSerializer.serialize(values)),
+  restore: () => FormValuePersistanceManager.canRestore() ? FormValueSerializer.deserialize((localStorage.getItem(FormValuePersistanceManager.KEY) as string)) : null,
+  clear: () => localStorage.clear()
 }
 
 const CreateFormInput: React.FunctionComponent<{ name: string, label: string, placeholder: string, direction?: "row" | "column" }> = ({ name, label, placeholder, direction = "column" }) => (
@@ -63,10 +72,23 @@ const CreateFormInput: React.FunctionComponent<{ name: string, label: string, pl
   </div>
 )
 
+enum RestoreStatus {
+  READY,
+  DOING,
+  COMPLETE,
+  FAILURE,
+  NEVER
+}
+
 const CreateForm: React.FunctionComponent<RouteComponentProps> = ({ location }) => {
   const params = new URLSearchParams(location.search);
   const fromData = params.get('from');
-  const loadValues = fromData ? FormValueSerializer.deserialize(fromData) : {};
+  const loadValues = fromData ? FormValueSerializer.deserialize(fromData) : null;
+
+  const [restoreStatus, setRestoreStatus] = useState<RestoreStatus>(
+    loadValues === null && FormValuePersistanceManager.canRestore() ? RestoreStatus.READY : RestoreStatus.NEVER
+  )
+  const formContainerRef = React.createRef<HTMLDivElement>();
 
   return (
     <>
@@ -91,75 +113,135 @@ const CreateForm: React.FunctionComponent<RouteComponentProps> = ({ location }) 
         }
         validationSchema={CreateFormSchema}
         onSubmit={(values) => {
-          window.location.href = `/show/${FormValueSerializer.serialize(values)}`
+          FormValuePersistanceManager.store(values);
+          window.location.href = `/show/${FormValueSerializer.serialize(values)}`;
         }}
-        render={(formik) => <Form className={`${formik.errors ? "error" : ""}`}>
-          <Header as="h2">Event Information</Header>
-          <Segment>
-            <Grid columns="two" >
-              <Grid.Column>
-                <CreateFormInput name="event.name" placeholder="mosquitone show" label="Name" />
-              </Grid.Column>
-              <Grid.Column>
-                <CreateFormInput name="event.url" placeholder="https://..." label="URL" />
-              </Grid.Column>
-              <Grid.Column width="eight">
-                <CreateFormInput name="event.date" placeholder="yyyy-mm-dd" label="Date" />
-              </Grid.Column>
-              <Grid.Column width="four">
-                <CreateFormInput name="event.openTime" placeholder="hh:mm" label="Open" />
-              </Grid.Column>
-              <Grid.Column width="four">
-                <CreateFormInput name="event.startTime" placeholder="hh:mm" label="Start" />
-              </Grid.Column>
-            </Grid>
-          </Segment>
-          <Header as="h2">Playings</Header>
-          <Segment>
+        render={(formik) => <Form loading={restoreStatus === RestoreStatus.DOING} className={`${formik.errors ? "error" : ""}`}>
+          <div ref={formContainerRef}>
             {
-              typeof formik.errors.playings === 'string' &&
-              <ErrorMessage component="div" className="ui error message" name="playings" />
+              restoreStatus === RestoreStatus.FAILURE &&
+              <Message attached error onDismiss={() => { setRestoreStatus(RestoreStatus.NEVER) }}>
+                <Message.Header>Restore Failure !</Message.Header>
+                <Message.Content>
+                  Error while restoring.
+              </Message.Content>
+              </Message>
             }
-            <Grid>
-              <FieldArray name="playings" render={(arrayHelper) => (
-                <Transition.Group
-                  duration={500}
-                >
-                  {formik.values.playings.map((_, idx, arr) => (
-                    <Grid.Row key={idx}>
-                      <Grid.Column width="ten">
-                        <CreateFormInput direction="row" name={`playings[${idx}]`} label={`${idx + 1}`} placeholder="My song or MC#1" />
-                      </Grid.Column>
-                      <Grid.Column width="four">
-                        <Button.Group>
-                          <Button disabled={idx < 1} icon onClick={() => arrayHelper.swap(idx - 1, idx)}>
-                            <Icon name="arrow up"></Icon>
-                          </Button>
-                          <Button disabled={idx >= arr.length - 1} icon onClick={() => arrayHelper.swap(idx, idx + 1)}>
-                            <Icon name="arrow down"></Icon>
-                          </Button>
-                          <Button icon onClick={() => arrayHelper.remove(idx)}>
-                            <Icon name="close"></Icon>
-                          </Button>
-                        </Button.Group>
-                      </Grid.Column>
-                    </Grid.Row>
-                  ))
-                  }
-                  <Grid.Column width="two">
-                    <Button icon onClick={() => arrayHelper.push("")}>
-                      <Icon name="add"></Icon>
-                    </Button>
-                  </Grid.Column>
-                </Transition.Group>
-              )} />
-            </Grid>
-          </Segment>
-          <Form.Field onClick={formik.submitForm} control={Button} size="big" >Submit</Form.Field>
+            {
+              restoreStatus === RestoreStatus.READY &&
+              <Message attached info onDismiss={() => { setRestoreStatus(RestoreStatus.NEVER) }}>
+                <Message.Header>
+                  Reuse setlist?
+              </Message.Header>
+                <Message.Content>
+                  <p>You can start from the last submitterd information.</p>
+                  <Popup size="large" on="click" trigger={<Button content="Restore"></Button>}>
+                    <Segment basic>
+                      <Header color="red">
+                        Danger
+                        <Header.Subheader>
+                          restore value will override current form input!
+                        </Header.Subheader>
+                      </Header>
+                      <p>Are you sure?</p>
+                      <Button
+                        color="green"
+                        content="OK"
+                        onClick={
+                          () => {
+                            setRestoreStatus(RestoreStatus.DOING);
+                            setTimeout(() => {
+                              const restoredValue = FormValuePersistanceManager.restore();
+                              if (restoredValue) {
+                                formik.setValues(restoredValue);
+                                setRestoreStatus(RestoreStatus.COMPLETE);
+                              } else {
+                                setRestoreStatus(RestoreStatus.FAILURE);
+                              }
+                            }, 1000);
+                          }
+                        }></Button>
+                    </Segment>
+                  </Popup>
+                </Message.Content>
+              </Message>
+            }
+            <Header as="h2">Event Information</Header>
+            <Segment>
+              <Grid columns="two" >
+                <Grid.Column>
+                  <CreateFormInput name="event.name" placeholder="mosquitone show" label="Name" />
+                </Grid.Column>
+                <Grid.Column>
+                  <CreateFormInput name="event.url" placeholder="https://..." label="URL" />
+                </Grid.Column>
+                <Grid.Column width="eight">
+                  <CreateFormInput name="event.date" placeholder="yyyy-mm-dd" label="Date" />
+                </Grid.Column>
+                <Grid.Column width="four">
+                  <CreateFormInput name="event.openTime" placeholder="hh:mm" label="Open" />
+                </Grid.Column>
+                <Grid.Column width="four">
+                  <CreateFormInput name="event.startTime" placeholder="hh:mm" label="Start" />
+                </Grid.Column>
+              </Grid>
+            </Segment>
+            <Header as="h2">Playings</Header>
+            <Segment>
+              {
+                typeof formik.errors.playings === 'string' &&
+                <ErrorMessage component="div" className="ui error message" name="playings" />
+              }
+              <Grid>
+                <FieldArray name="playings" render={(arrayHelper) => (
+                  <Transition.Group
+                    duration={500}
+                  >
+                    {formik.values.playings.map((_, idx, arr) => (
+                      <Grid.Row key={idx}>
+                        <Grid.Column width="ten">
+                          <CreateFormInput direction="row" name={`playings[${idx}]`} label={`${idx + 1}`} placeholder="My song or MC#1" />
+                        </Grid.Column>
+                        <Grid.Column width="four">
+                          <Button.Group>
+                            <Button disabled={idx < 1} icon onClick={() => arrayHelper.swap(idx - 1, idx)}>
+                              <Icon name="arrow up"></Icon>
+                            </Button>
+                            <Button disabled={idx >= arr.length - 1} icon onClick={() => arrayHelper.swap(idx, idx + 1)}>
+                              <Icon name="arrow down"></Icon>
+                            </Button>
+                            <Button icon onClick={() => arrayHelper.remove(idx)}>
+                              <Icon name="close"></Icon>
+                            </Button>
+                          </Button.Group>
+                        </Grid.Column>
+                      </Grid.Row>
+                    ))
+                    }
+                    <Grid.Column width="two">
+                      <Button icon onClick={() => arrayHelper.push("")}>
+                        <Icon name="add"></Icon>
+                      </Button>
+                    </Grid.Column>
+                  </Transition.Group>
+                )} />
+              </Grid>
+            </Segment>
+            <Form.Field onClick={formik.submitForm} control={Button} size="big" >Submit</Form.Field>
+          </div>
         </Form>
         }
       >
       </Formik>
+      <Popup
+        context={formContainerRef}
+        content='Complete!'
+        position='top center'
+        onClose={() => setRestoreStatus(RestoreStatus.NEVER)}
+        open={
+          restoreStatus === RestoreStatus.COMPLETE
+        }
+      ></Popup>
     </>
   )
 }

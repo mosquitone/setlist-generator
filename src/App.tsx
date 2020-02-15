@@ -1,5 +1,5 @@
 import { ErrorMessage, Field, FieldArray, Formik } from "formik";
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { Link, Redirect, Route, RouteComponentProps, Switch, withRouter } from "react-router-dom";
 import { Button, Container, Divider, Dropdown, Form, Grid, Header, Icon, Input, Label, Menu, Message, Modal, Popup, Segment, Transition } from "semantic-ui-react";
 import { setTimeout } from "timers";
@@ -299,24 +299,27 @@ const SharePanel: React.FunctionComponent<{
   signature?: boolean | string,
 }> = ({ url, message, title, signature }) => {
 
-  const urlInputRef = useRef<any>();
-  const selectURL = useCallback(() => {
-    const urlInput = urlInputRef.current;
+  const [urlInput, setURLInput] = useState<HTMLInputElement>();
+
+  const [showCopyCompletePopup, setShowCopyCompletePopup] = useState(false);
+
+  const onCopyComplete = useCallback(() => {
+    setShowCopyCompletePopup(true);
+    setTimeout(() => {
+      setShowCopyCompletePopup(false);
+    }, 1000);
+  }, [setShowCopyCompletePopup]);
+
+  const copyURL = useCallback(() => {
     if (urlInput) {
       urlInput.focus();
-      urlInput.select();
+      urlInput.setSelectionRange(0, urlInput.value.length);
+      document.execCommand("copy");
+      urlInput.setSelectionRange(0, 0);
+      urlInput.blur();
+      onCopyComplete();
     }
-  }, []);
-
-  const [popupIsOpen, setPopupIsOpen] = useState(false);
-  const openPopup = useCallback(() => {
-    setPopupIsOpen(true);
-    setTimeout(() => {
-      setPopupIsOpen(false);
-    }, 1000);
-  }, []);
-
-  useEffect(selectURL, [url])
+  }, [urlInput, onCopyComplete]);
 
   const supportShareAPI = (navigator as any).share
 
@@ -327,13 +330,13 @@ const SharePanel: React.FunctionComponent<{
           <Header>Copy URL</Header>
           <Input
             readOnly
-            ref={urlInputRef}
+            ref={(instance: any) => { instance && setURLInput(instance.inputRef.current) }}
             size="large"
             fluid
             value={url}
             action={
               <Popup
-                open={popupIsOpen}
+                open={showCopyCompletePopup}
                 content="Copied!"
                 position="top center"
                 trigger={
@@ -342,11 +345,7 @@ const SharePanel: React.FunctionComponent<{
                     labelPosition: 'right',
                     icon: 'copy',
                     content: 'Copy',
-                    onClick: () => {
-                      selectURL();
-                      document.execCommand("copy");
-                      openPopup();
-                    }
+                    onClick: copyURL,
                   }}>
                   </Button>
 

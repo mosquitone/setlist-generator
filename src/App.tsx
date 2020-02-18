@@ -1,7 +1,7 @@
 import { ErrorMessage, Field, FieldArray, Formik } from "formik";
 import React, { useCallback, useState } from 'react';
 import { Link, Redirect, Route, RouteComponentProps, Switch, withRouter } from "react-router-dom";
-import { Button, Container, Divider, Dropdown, Form, Grid, Header, Icon, Input, Label, Menu, Message, Modal, Popup, Segment, Transition } from "semantic-ui-react";
+import { Button, Container, Divider, Dropdown, Form, Grid, Header, Icon, Input, Label, Loader, Menu, Message, Modal, Popup, Segment, Transition } from "semantic-ui-react";
 import { setTimeout } from "timers";
 import * as Yup from "yup";
 import './App.css';
@@ -291,6 +291,30 @@ const SetList: React.FunctionComponent<CreateFormValues> = ({ event, playings })
   )
 }
 
+const DownloadSetlistImage: React.FunctionComponent<{ onComplete?: () => void, imageURL: string, filename: string }> = ({ onComplete, imageURL, filename }) => {
+
+  const [loadCompleted, setLoadCompleted] = useState(false);
+  const downloadAnchorRef = React.createRef<HTMLAnchorElement>();
+
+  return <>
+    <Loader size="massive" content="content">
+      {
+        loadCompleted ? "Start Downloading...": "Prepare Downloading..."
+      }
+    </Loader >
+    <a ref={downloadAnchorRef} href={imageURL} download={filename} hidden>download setlist</a>
+    <img alt="setlist" onLoad={() => {
+      setLoadCompleted(true);
+      setTimeout(() => {
+        downloadAnchorRef.current?.click();
+        if (onComplete) {
+          onComplete();
+        }
+      }, 1000);
+    }} src={imageURL} hidden></img>
+  </>
+}
+
 
 const SharePanel: React.FunctionComponent<{
   url: string,
@@ -391,6 +415,7 @@ const ShowSetlist: React.FunctionComponent<RouteComponentProps<{ data: string }>
   const setlistSelectorId = "mqtn_setlist";
   const currentURL = window.location.href;
   const imageURL = `${window.location.origin}/api/print?url=${encodeURIComponent(currentURL)}&selector=${encodeURIComponent(`#${setlistSelectorId}`)}&filename=mosquitone_setlist&type=png`
+  const [tryDownloadImage, setTtyDownloadImage] = useState(false);
 
   const sharableURLs = [
     {
@@ -413,7 +438,7 @@ const ShowSetlist: React.FunctionComponent<RouteComponentProps<{ data: string }>
       </Message>
       <Menu className="mqtn unprint">
         <Menu.Item onClick={() => history.push({ pathname: "/new", search: `?from=${data}` })} name="edit"></Menu.Item>
-        <Menu.Item name="download" as="a" href={imageURL} target="_blank"></Menu.Item>
+        <Menu.Item onClick={() => setTtyDownloadImage(true)} name="download"></Menu.Item>
         <Menu.Item onClick={() => window.print()} name="print"></Menu.Item>
         <Modal
           trigger={
@@ -443,6 +468,9 @@ const ShowSetlist: React.FunctionComponent<RouteComponentProps<{ data: string }>
           </Modal.Content>
         </Modal>
       </Menu>
+      <Modal basic onClose={()=>setTtyDownloadImage(false)} open={tryDownloadImage}>
+        <DownloadSetlistImage onComplete={() => setTtyDownloadImage(false)} imageURL={imageURL} filename="mosquitone_setlist.png"></DownloadSetlistImage>
+      </Modal>
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
         <div id={setlistSelectorId}>
           <SetList {...formValues}

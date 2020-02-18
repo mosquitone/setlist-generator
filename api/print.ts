@@ -50,6 +50,7 @@ export default async function print(req: NowRequest, res: NowResponse) {
     try {
         res.setHeader('content-type', `image/${type}`);
         res.setHeader('content-disposition', `attachment; filename="${filename}.${type}`);
+        res.setHeader('cache-control', 'max-age=86400');
         res.write("");
         const imageBuffer = await captureNode(url, selector, type)
         console.debug(`success capture`);

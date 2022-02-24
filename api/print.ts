@@ -4,9 +4,8 @@ import { NowRequest, NowResponse } from "@now/node"
 import { resolveSoa } from "dns"
 
 const fontURLs = [
-    'https://raw.githack.com/googlei18n/noto-emoji/master/fonts/NotoColorEmoji.ttf',
-    'https://raw.githack.com/googlefonts/noto-cjk/master/NotoSansJP-Regular.otf',
-    'https://raw.githack.com/googlefonts/noto-cjk/master/NotoSansJP-Regular.otf',
+    'https://rawcdn.githack.com/googlefonts/noto-emoji/9a5261d871451f9b5183c93483cbd68ed916b1e9/fonts/NotoEmoji-Regular.ttf',
+    'https://rawcdn.githack.com/google/fonts/57311b5baf175fa1bdbf055d5ccb50e53d19e745/ofl/notosansjp/NotoSansJP-Regular.otf',
 ]
 
 const captureNode = async (url: string, selector: string, type: "png" | "jpeg") => {

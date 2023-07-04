@@ -1,8 +1,8 @@
+import { Buffer } from "buffer";
 import { ErrorMessage, Field, FieldArray, Formik } from "formik";
 import React, { useCallback, useState } from 'react';
-import { Link, Redirect, Route, RouteComponentProps, Switch, withRouter } from "react-router-dom";
+import { Link, Route, Routes, useLocation, useNavigate, useParams } from "react-router-dom";
 import { Button, Container, Divider, Dropdown, Form, Grid, Header, Icon, Input, Label, Menu, Message, Modal, Popup, Segment, Transition } from "semantic-ui-react";
-import { setTimeout } from "timers";
 import * as Yup from "yup";
 import './App.css';
 import logo from './logo.png';
@@ -34,8 +34,8 @@ const Home = () => {
 
 const CreateFormSchema = Yup.object().shape({
   meta: Yup.object().shape({
-    createDate: Yup.string().required(),
-    version: Yup.string().required(),
+    createDate: Yup.string().required().default(""),
+    version: Yup.string().required().default(""),
   }),
   event: Yup.object().shape({
     name: Yup.string().required().default(""),
@@ -44,7 +44,7 @@ const CreateFormSchema = Yup.object().shape({
     openTime: Yup.string().required().default(""),
     startTime: Yup.string().required().default(""),
   }),
-  playings: Yup.array().of(Yup.string().required().default("")).required().default([])
+  playings: Yup.array().of(Yup.string().required().default("")).min(1).required().default([])
 });
 declare type CreateFormValues = Yup.InferType<typeof CreateFormSchema>;
 
@@ -66,7 +66,7 @@ const CreateFormInput: React.FunctionComponent<{ name: string, label: string, pl
   <div style={{ display: "flex", flexDirection: direction, alignItems: direction === "column" ? "baseline" : "center" }}>
     <label htmlFor={name}>{label}</label>
     <Field placeholder={placeholder} name={name}></Field>
-    <ErrorMessage component="div" className="ui error message" name={name} render={(msg) =>
+    <ErrorMessage component="div" className="ui error message" name={name} render={(msg: any) =>
       <Label color="red" basic pointing={direction === "column" ? "above" : "left"}>{msg}</Label>
     } />
   </div>
@@ -80,7 +80,8 @@ enum RestoreStatus {
   NEVER
 }
 
-const CreateForm: React.FunctionComponent<RouteComponentProps> = ({ location }) => {
+const CreateForm: React.FunctionComponent = () => {
+  const location = useLocation()
   const params = new URLSearchParams(location.search);
   const fromData = params.get('from');
   const loadValues = fromData ? FormValueSerializer.deserialize(fromData) : null;
@@ -193,7 +194,7 @@ const CreateForm: React.FunctionComponent<RouteComponentProps> = ({ location }) 
                 <ErrorMessage component="div" className="ui error message" name="playings" />
               }
               <Grid>
-                <FieldArray name="playings" render={(arrayHelper) => (
+                <FieldArray name="playings" render={(arrayHelper: any) => (
                   <Transition.Group
                     duration={500}
                   >
@@ -382,12 +383,12 @@ const SharePanel: React.FunctionComponent<{
   </>
 }
 
-const ShowSetlist: React.FunctionComponent<RouteComponentProps<{ data: string }>> = ({
-  history,
-  match: { params: { data } }
-}) => {
+const ShowSetlist: React.FunctionComponent<any> = () => {
 
-  const formValues: CreateFormValues = FormValueSerializer.deserialize(data);
+  const {data} = useParams();
+  const navigate = useNavigate()
+  const formValues: CreateFormValues = FormValueSerializer.deserialize(data!);
+
   const setlistSelectorId = "mqtn_setlist";
   const currentURL = window.location.href;
   const imageURL = `${window.location.origin}/api/print?url=${encodeURIComponent(currentURL)}&selector=${encodeURIComponent(`#${setlistSelectorId}`)}&filename=mosquitone_setlist&type=png`
@@ -412,7 +413,7 @@ const ShowSetlist: React.FunctionComponent<RouteComponentProps<{ data: string }>
       </Message.Header>
       </Message>
       <Menu className="mqtn unprint">
-        <Menu.Item onClick={() => history.push({ pathname: "/new", search: `?from=${data}` })} name="edit"></Menu.Item>
+        <Menu.Item onClick={() => navigate({ pathname: "/new", search: `?from=${data}` })} name="edit"></Menu.Item>
         <Menu.Item name="download" as="a" href={imageURL} target="_blank"></Menu.Item>
         <Menu.Item onClick={() => window.print()} name="print"></Menu.Item>
         <Modal
@@ -463,7 +464,8 @@ const NotFound = () => {
   )
 }
 
-const App = withRouter(({ location }) => {
+const App = (() => {
+  const location = useLocation();
   return (
     <Container text>
       <Grid>
@@ -471,13 +473,13 @@ const App = withRouter(({ location }) => {
         </Grid.Row>
         <Grid.Row as="main">
           <Grid.Column>
-            <Switch>
-              <Route path="/" exact component={Home} />
-              <Route path="/new" exact component={CreateForm} />
-              <Route path="/show/:data" exact component={ShowSetlist} />
-              <Route path="/404" exact strict component={NotFound} />
-              <Redirect strict to="/404" />
-            </Switch>
+            <Routes>
+              <Route path="/"  Component={Home} />
+              <Route path="/new" Component={CreateForm} />
+              <Route path="/show/:data" Component={ShowSetlist} />
+              <Route path="/404" Component={NotFound} />
+              {/* <Navigate to="/404" /> */}
+            </Routes>
           </Grid.Column>
         </Grid.Row>
         <Grid.Row as="footer" >

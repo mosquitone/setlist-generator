@@ -1,12 +1,13 @@
-import puppeteer from "puppeteer"
-import chrome from "chrome-aws-lambda"
-import { NowRequest, NowResponse } from "@now/node"
-import { resolveSoa } from "dns"
+import puppeteer from "puppeteer-core"
+import chrome from "@sparticuz/chromium-min"
+import { VercelRequest, VercelResponse } from "@vercel/node"
 
 const fontURLs = [
     'https://rawcdn.githack.com/googlefonts/noto-emoji/9a5261d871451f9b5183c93483cbd68ed916b1e9/fonts/NotoEmoji-Regular.ttf',
     'https://rawcdn.githack.com/google/fonts/57311b5baf175fa1bdbf055d5ccb50e53d19e745/ofl/notosansjp/NotoSansJP-Regular.otf',
 ]
+
+chrome.setGraphicsMode = false;
 
 const captureNode = async (url: string, selector: string, type: "png" | "jpeg") => {
     try {
@@ -16,7 +17,7 @@ const captureNode = async (url: string, selector: string, type: "png" | "jpeg") 
     }
     const browser = await puppeteer.launch({
         args: chrome.args,
-        executablePath: await chrome.executablePath,
+        executablePath: await chrome.executablePath(process.env.CHROME_EXECUTABLE_PATH),
         headless: chrome.headless,
     });
     try {
@@ -36,7 +37,7 @@ const captureNode = async (url: string, selector: string, type: "png" | "jpeg") 
 }
 
 
-export default async function print(req: NowRequest, res: NowResponse) {
+export default async function print(req: VercelRequest, res: VercelResponse) {
     const { url, selector, filename = "image", type = "png" } = req.query;
     if (typeof url !== 'string' || 
         typeof selector !== 'string' || 

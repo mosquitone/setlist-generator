@@ -1,4 +1,4 @@
-import { ErrorMessage, Field, FieldArray, Formik } from "formik";
+import { ErrorMessage, Field, FieldArray, Formik, useField } from "formik";
 import React, {
   ReactElement,
   useCallback,
@@ -25,7 +25,7 @@ import {
   Modal,
   Popup,
   Segment,
-  Transition,
+  Transition
 } from "semantic-ui-react";
 import { useSetlistManager } from "./client";
 import { SetListProxy } from "./component";
@@ -123,8 +123,8 @@ const FormValuePersistanceManager = {
   restore: () =>
     FormValuePersistanceManager.canRestore()
       ? JSON.parse(
-          localStorage.getItem(FormValuePersistanceManager.KEY) as string,
-        )
+        localStorage.getItem(FormValuePersistanceManager.KEY) as string,
+      )
       : null,
   clear: () => localStorage.clear(),
 };
@@ -161,7 +161,8 @@ enum RestoreStatus {
 }
 
 function PlayingField({ name }: { name: string }) {
-  const [openMisc, setOpenMisc] = useState(false);
+  const f = useField(name)
+  const [openMisc, setOpenMisc] = useState(f[0].value.note);
   return (
     <span
       style={{ display: "flex", flexDirection: "column", alignItems: "end" }}
@@ -415,37 +416,40 @@ function SetlistForm({
               </Segment>
               <Header as="h2">Event</Header>
               <Segment>
-                <Grid columns={3} stackable>
-                  <Grid.Column width={16}>
-                    <CreateFormInput
-                      required
-                      name="event.name"
-                      placeholder="mosquitone show"
-                      label="Name"
-                    />
-                  </Grid.Column>
-                  <Grid.Column width={8}>
-                    <CreateFormInput
-                      name="event.date"
-                      placeholder="yyyy-mm-dd"
-                      label="Date"
-                    />
-                  </Grid.Column>
-                  <Grid.Column width="four">
-                    <CreateFormInput
-                      name="event.openTime"
-                      placeholder="hh:mm"
-                      label="Open"
-                    />
-                  </Grid.Column>
-                  <Grid.Column width="four">
-                    <CreateFormInput
-                      name="event.startTime"
-                      placeholder="hh:mm"
-                      label="Start"
-                    />
-                  </Grid.Column>
-                </Grid>
+                <Form.Group>
+                  <CreateFormInput
+                    width={16}
+                    required
+                    name="event.name"
+                    placeholder="mosquitone show"
+                    label="Name"
+                  />
+                </Form.Group>
+                {loading  || <Accordion  
+                 defaultActiveIndex={ setlist && ((e) => e.date || e.openTime || e.startTime)(setlist.event) ? 0 : undefined} panels={[
+                  {
+                    key: "option", title: "Option", content:
+                    {
+                      content: <Form.Group widths={"equal"} >
+                        <CreateFormInput
+                          name="event.date"
+                          placeholder="yyyy-mm-dd"
+                          label="Date"
+                        />
+                        <CreateFormInput
+                          name="event.openTime"
+                          placeholder="hh:mm"
+                          label="Open"
+                        />
+                        <CreateFormInput
+                          name="event.startTime"
+                          placeholder="hh:mm"
+                          label="Start"
+                        />
+                      </Form.Group>
+                    }
+                  }
+                ]} />}
               </Segment>
               <Header as="h2">Playings</Header>
               <Segment>
@@ -625,12 +629,11 @@ const SharePanel: React.FunctionComponent<{
                       text:
                         message +
                         "\n" +
-                        `${
-                          signature
-                            ? typeof signature === "string"
-                              ? signature
-                              : "mosquitone setlist generator"
-                            : ""
+                        `${signature
+                          ? typeof signature === "string"
+                            ? signature
+                            : "mosquitone setlist generator"
+                          : ""
                         }`,
                     });
                   }}
@@ -664,13 +667,12 @@ export const ShowSetlist = withLoading(
 
     const setlistSelectorId = "mqtn_setlist";
     const currentURL = window.location.href;
-    const imageURL = `${
-      window.location.origin
-    }/api/print?url=${encodeURIComponent(
-      currentURL,
-    )}&selector=${encodeURIComponent(
-      `#${setlistSelectorId}`,
-    )}&filename=mosquitone_setlist&type=png`;
+    const imageURL = `${window.location.origin
+      }/api/print?url=${encodeURIComponent(
+        currentURL,
+      )}&selector=${encodeURIComponent(
+        `#${setlistSelectorId}`,
+      )}&filename=mosquitone_setlist&type=png`;
 
     const [prepareDownload, setPrepareDownload] = useState(
       !process.env.WAKEUP_CHROME,

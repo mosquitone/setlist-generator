@@ -43,10 +43,10 @@ const MQTNSetlist = ({
                 />
               </h2>
             </div>
-            <p>{event.date}</p>
-            <p>
-              OPEN {event.openTime}, START: {event.startTime}
-            </p>
+            {event.date && <p>{event.date}</p>}
+            {(event.openTime || event.startTime )&& <p>
+              {event.openTime && `OPEN ${event.openTime}, `}{event.startTime && `START: ${event.startTime}`}
+            </p>}
           </div>
         </div>
         <div className="row">
@@ -103,10 +103,10 @@ const BasicSetlist = ({
                 alt={`qrcode for this setlist`}
               />
             </div>
-            <p>{event.date}</p>
-            <p>
-              OPEN {event.openTime}, START: {event.startTime}
-            </p>
+            {event.date && <p>{event.date}</p>}
+            {(event.openTime || event.startTime) && <p>
+              {event.openTime && `OPEN ${event.openTime}, `}{event.startTime && `START: ${event.startTime}`}
+            </p>}
           </div>
         </div>
         <div className="row">

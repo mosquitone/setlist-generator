@@ -1,68 +1,68 @@
 .mqtn.error.message {
-    color: red;
+  color: red;
 }
 
 .inverted {
-    background-color: #323232 !important;
+  background-color: #323232 !important;
 }
 
 .paper {
-    background-image: url('./soft-wallpaper.png') !important;
+  background-image: url("./soft-wallpaper.png") !important;
 }
 
 @media print {
-    .mqtn.unprint {
-        display: none !important;
-    }
-    .mqtn.setlist.container {
-        -webkit-print-color-adjust: exact;
-        z-index: 1;
-        position: fixed;
-        top: 0;
-        left: 0;
-        zoom: 1.4 !important;
-    }
+  .mqtn.unprint {
+    display: none !important;
+  }
+  .mqtn.setlist.container {
+    -webkit-print-color-adjust: exact;
+    z-index: 1;
+    position: fixed;
+    top: 0;
+    left: 0;
+    zoom: 1.4 !important;
+  }
 }
 
 @media screen and (max-width: 480px) {
-    .mqtn.setlist.container {
-        transform: scale(0.5);
-		transform-origin: top center;
-    }
+  #mqtn_setlist {
+    transform: scale(0.5);
+    transform-origin: top center;
+  }
 }
 
 .mqtn.setlist.container {
-    font-size: 10px;
-    background-clip: border-box;
-    background-origin: border-box;
-    height: 842px;
-    width: 595px;
-    overflow: hidden;
-    padding: 20px;
+  font-size: 10px;
+  background-clip: border-box;
+  background-origin: border-box;
+  height: 842px;
+  width: 595px;
+  overflow: hidden;
+  padding: 20px;
 }
 
 .mqtn.setlist.container p {
-    line-height: 0;
+  line-height: 0;
 }
 
 .mqtn.setlist.container .mqtn.header h1 {
-    margin-bottom: 0.5rem;
-    font-size: 3em;
+  margin-bottom: 0.5rem;
+  font-size: 3em;
 }
 
 .mqtn.setlist.container .mqtn.sub.header {
-    margin-bottom: 0.5rem;
-    font-size: 1em;
+  margin-bottom: 0.5rem;
+  font-size: 1em;
 }
 
 .mqtn.setlist.container .grid .row {
-    padding-top: 0;
+  padding-top: 0;
 }
 
 .mqtn.setlist.container .mqtn.content {
-    padding-top: 0;
+  padding-top: 0;
 }
 
-.mqtn.setlist.container .list>.item .content {
-    font-size: 2em;
+.mqtn.setlist.container .list > .item .content {
+  font-size: 2em;
 }

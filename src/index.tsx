@@ -1,9 +1,15 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import App from './App';
-import 'semantic-ui-css/semantic.min.css'
-import { BrowserRouter } from 'react-router-dom';
+import React from "react";
+import ReactDOM from "react-dom/client";
+import App from "./App";
+import "semantic-ui-css/semantic.min.css";
+import { BrowserRouter } from "react-router-dom";
+import { SetlistManagerProvider } from "./client";
 
-const root = ReactDOM.createRoot(document.querySelector("#root")!)
-root.render(<BrowserRouter> <App /> </BrowserRouter>);
-
+const root = ReactDOM.createRoot(document.querySelector("#root")!);
+root.render(
+  <BrowserRouter>
+    <SetlistManagerProvider>
+      <App />
+    </SetlistManagerProvider>
+  </BrowserRouter>,
+);

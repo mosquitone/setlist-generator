@@ -1,17 +1,16 @@
+import html2canvas from "html2canvas";
 import React from "react";
-import { SetList } from "./model";
 import logo from "./logo.png";
+import { SetList } from "./model";
 
-export const SetListProxy: React.FunctionComponent<SetList> = (v) => {
-  const qrCodeURL = `https://chart.apis.google.com/chart?cht=qr&chs=300x300&chl=${encodeURIComponent(
-    window.location.href,
-  )}&chld=L|1`;
+export const SetListProxy: React.FunctionComponent<SetList & { qrCodeURL: string }> = (v) => {
+
 
   switch (v.theme) {
     case "mqtn":
-      return <MQTNSetlist {...v} qrCodeURL={qrCodeURL} />;
+      return <MQTNSetlist {...v} />;
     case "basic":
-      return <BasicSetlist {...v} qrCodeURL={qrCodeURL} />;
+      return <BasicSetlist {...v} />;
     default:
       break;
   }
@@ -44,7 +43,7 @@ const MQTNSetlist = ({
               </h2>
             </div>
             {event.date && <p>{event.date}</p>}
-            {(event.openTime || event.startTime )&& <p>
+            {(event.openTime || event.startTime) && <p>
               {event.openTime && `OPEN ${event.openTime}, `}{event.startTime && `START: ${event.startTime}`}
             </p>}
           </div>
@@ -129,4 +128,4 @@ const BasicSetlist = ({
       </div>
     </div>
   </div>
-);
+); export function captureNode(el: HTMLElement): Promise<Blob> { return new Promise(async (res, rej) => (await html2canvas(el)).toBlob(b => b ? res(b) : rej())) } 

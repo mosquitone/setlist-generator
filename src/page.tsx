@@ -1,32 +1,16 @@
 import { ErrorMessage, Field, FieldArray, Formik, useField } from "formik";
+import html2canvas from "html2canvas";
+import QR from "qrcode";
 import React, {
   ReactElement,
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
-import {
-  Accordion,
-  Button,
-  Divider,
-  Dropdown,
-  Form,
-  Grid,
-  Header,
-  Icon,
-  Input,
-  Label,
-  List,
-  Loader,
-  Menu,
-  Message,
-  Modal,
-  Popup,
-  Segment,
-  Transition
-} from "semantic-ui-react";
+import { Accordion, Button, Divider, Dropdown, Form, Grid, Header, Icon, Input, Label, List, Loader, Menu, Message, Modal, Placeholder, Popup, Segment, Transition } from "semantic-ui-react";
 import { useSetlistManager } from "./client";
 import { SetListProxy } from "./component";
 import { SetList, SetListSchema, SetListValue } from "./model";
@@ -42,17 +26,7 @@ export const Home = () => {
         .map((i) => i),
     [m],
   );
-  const loader = useCallback(() => {
-    return Promise.all(history.map((h) => m.get(h)))
-      .then((s) =>
-        s.reduce<Record<string, SetList>>(
-          (m, s, i) => ({ ...m, [history[i]]: s }),
-          {},
-        ),
-      )
-      .catch((e) => e)
-      .finally();
-  }, [m, history]);
+  const loader = useCallback(() => m.getAll(history), [m, history]);
 
   const { loading, data } = useLoading(loader);
   return (
@@ -88,13 +62,12 @@ export const Home = () => {
                       <List link>
                         {history.map((i) => (
                           <List.Item key={i}>
-                            <List.Content>
-                              <Link to={"/show/" + i}>
-                                {data ? i + "(" + data[i].displayName + ")" : i}
-                                {loading && <Loader active />}
-
-                                {/* } */}
-                              </Link>
+                            <List.Content as={Link} to={"/show/" + i}>
+                              {i}
+                              <List.Description>
+                                {data ? data[i].displayName : <Placeholder content={<Placeholder.Line></Placeholder.Line>} />}
+                              </List.Description>
+                              {/* } */}
                             </List.Content>
                           </List.Item>
                         ))}
@@ -425,31 +398,31 @@ function SetlistForm({
                     label="Name"
                   />
                 </Form.Group>
-                {loading  || <Accordion  
-                 defaultActiveIndex={ setlist && ((e) => e.date || e.openTime || e.startTime)(setlist.event) ? 0 : undefined} panels={[
-                  {
-                    key: "option", title: "Option", content:
+                {loading || <Accordion
+                  defaultActiveIndex={setlist && ((e) => e.date || e.openTime || e.startTime)(setlist.event) ? 0 : undefined} panels={[
                     {
-                      content: <Form.Group widths={"equal"} >
-                        <CreateFormInput
-                          name="event.date"
-                          placeholder="yyyy-mm-dd"
-                          label="Date"
-                        />
-                        <CreateFormInput
-                          name="event.openTime"
-                          placeholder="hh:mm"
-                          label="Open"
-                        />
-                        <CreateFormInput
-                          name="event.startTime"
-                          placeholder="hh:mm"
-                          label="Start"
-                        />
-                      </Form.Group>
+                      key: "option", title: "Option", content:
+                      {
+                        content: <Form.Group widths={"equal"} >
+                          <CreateFormInput
+                            name="event.date"
+                            placeholder="yyyy-mm-dd"
+                            label="Date"
+                          />
+                          <CreateFormInput
+                            name="event.openTime"
+                            placeholder="hh:mm"
+                            label="Open"
+                          />
+                          <CreateFormInput
+                            name="event.startTime"
+                            placeholder="hh:mm"
+                            label="Start"
+                          />
+                        </Form.Group>
+                      }
                     }
-                  }
-                ]} />}
+                  ]} />}
               </Segment>
               <Header as="h2">Playings</Header>
               <Segment>
@@ -651,11 +624,14 @@ export const ShowSetlist = withLoading(
   (_: {}) => {
     const { id } = useParams();
 
+
     const manager = useSetlistManager();
 
     return useCallback(async () => {
+      const qrCodeURL = await QR.toDataURL(window.location.href)
       const setlist = await manager.get(id!);
       return {
+        qrCodeURL,
         setlist,
         manager,
         id: id as string,
@@ -674,27 +650,11 @@ export const ShowSetlist = withLoading(
         `#${setlistSelectorId}`,
       )}&filename=mosquitone_setlist&type=png`;
 
-    const [prepareDownload, setPrepareDownload] = useState(
-      !process.env.WAKEUP_CHROME,
-    );
-    useEffect(() => {
-      if (!prepareDownload) {
-        fetch(
-          window.location.origin + "/api/print?url=google.com&selector=body",
-        ).finally(() => {
-          setPrepareDownload(true);
-        });
-      }
-    }, [prepareDownload]);
 
     const sharableURLs = [
       {
         name: "Page",
         url: currentURL,
-      },
-      {
-        name: "Image",
-        url: imageURL,
       },
     ];
     const [selectedURLIndex, setSelectedURLIndex] = useState(0);
@@ -707,6 +667,8 @@ export const ShowSetlist = withLoading(
         data.manager.pushToHistory(data.id);
       }
     }, [data]);
+
+    const download = useDownload();
 
     return (
       <>
@@ -724,9 +686,8 @@ export const ShowSetlist = withLoading(
           ></Menu.Item>
           <Menu.Item
             name="download"
-            {...(prepareDownload
-              ? { as: "a", href: imageURL, target: "_blank" }
-              : { disabled: true, icon: "loading circle notch" })}
+            disabled={loading || download.state.loading}
+            onClick={download.handleDownload}
           ></Menu.Item>
           <Modal trigger={<Menu.Item name="share"></Menu.Item>}>
             <Modal.Header>
@@ -808,9 +769,10 @@ export const ShowSetlist = withLoading(
                     alignItems: "center",
                   }}
                 >
-                  <div id={setlistSelectorId}>
+                  <div id={setlistSelectorId} ref={(r) => download.ref.current = r}>
                     <SetListProxy
                       {...data.setlist}
+                      qrCodeURL={"" + data.qrCodeURL}
                       theme={theme || "basic"}
                     ></SetListProxy>
                   </div>
@@ -879,4 +841,38 @@ function withLoading<Props extends React.PropsWithChildren, LoadData>(
     const state = useLoading(loader);
     return render(props, state);
   };
+}
+
+
+function useDownload() {
+
+  const ref = useRef<HTMLElement | null>(null);
+  const [state, setState] = useState<{ loading: boolean, error: any, }>({ loading: false, error: null })
+
+  const handleDownload = useCallback(() => {
+    if (!ref.current) {
+      return
+    }
+    const element = ref.current;
+    (async () => {
+      setState({ loading: true, error: null })
+      const canvas = await html2canvas(element);
+      const blob = await new Promise<Blob>((r, j) => canvas.toBlob((b) => b ? r(b) : j(b)))
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.target = "_blank";
+      anchor.download = "mosquitone_setlist"
+      anchor.href = url;
+      anchor.click();
+      URL.revokeObjectURL(url);
+      setState({ loading: false, error: null })
+    })().catch(e => setState(state => ({ ...state, error: e }))).finally(() => { setState(state => ({ ...state, loading: false })) })
+  }, [ref])
+
+  return {
+    state,
+    ref,
+    handleDownload
+  }
+
 }

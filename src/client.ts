@@ -6,11 +6,11 @@ class SetlistManager {
   private storageKeyPrefix = "SetlistManager";
   private storage = localStorage;
 
-  private async callAPI(
+  private async callAPI<V>(
     path: string = "",
     options: Parameters<typeof fetch>[1] = {},
     body?: any,
-  ) {
+  ): Promise<V> {
     const res = await fetch(this.endpoint + path, {
       body: body ? JSON.stringify(body) : undefined,
       headers: {
@@ -24,13 +24,13 @@ class SetlistManager {
   }
 
   public async get(id: SetListIdentifier): Promise<SetList> {
-    const setlist = await this.callAPI("?id=" + id, {});
-    return {
-      ...setlist,
-      get displayName() {
-        return this.band.name + this.event.name;
-      },
-    } as SetList;
+    return (await this.getAll([id]))[id]
+  }
+
+  public async getAll(ids: SetListIdentifier[]): Promise<{ [key: SetListIdentifier]: SetList }> {
+    const searh = new URLSearchParams();
+    ids.forEach(i => searh.append("id", i));
+    return (await this.callAPI<SetListValue[]>("?" + searh.toString())).reduce((o, s, i) => ({ ...o, [ids[i]]: { ...s, get displayName() { return `${this.band.name}/${this.event.name}` } } }), {});
   }
   public async create(value: SetListValue): Promise<SetListIdentifier> {
     return this.callAPI("", { method: "post" }, value);

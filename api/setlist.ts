@@ -19,6 +19,6 @@ export default async function handler(
     return response.status(201).json(id)
   }
 
-  const user = await kv.hgetall(request.query.id as string);
-  return response.status(200).json(user);
+  const ids = typeof request.query.id === "string" ? [request.query.id] : request.query.id;
+  return response.status(200).json(await Promise.all(ids.map(i => kv.hgetall(i)) ));
 }

@@ -66,3 +66,7 @@
 .mqtn.setlist.container .list > .item .content {
   font-size: 2em;
 }
+
+.mqtn.setlist.container.theme-mqtn * {
+  background: transparent !important;
+}

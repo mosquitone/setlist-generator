@@ -1,10 +1,15 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import App from './App';
-import * as serviceWorker from './serviceWorker';
-import 'semantic-ui-css/semantic.min.css'
-import { BrowserRouter } from 'react-router-dom';
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { BrowserRouter } from "react-router-dom";
+import "semantic-ui-css/semantic.min.css";
+import App from "./App";
+import { SetlistManagerProvider } from "./client";
 
-ReactDOM.render(<BrowserRouter> <App /> </BrowserRouter>, document.getElementById('root'));
-
-serviceWorker.unregister();
+const root = ReactDOM.createRoot(document.querySelector("#root")!);
+root.render(
+  <BrowserRouter>
+    <SetlistManagerProvider>
+      <App />
+    </SetlistManagerProvider>
+  </BrowserRouter>,
+);

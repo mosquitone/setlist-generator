@@ -135,7 +135,7 @@ enum RestoreStatus {
 
 function PlayingField({ name }: { name: string }) {
   const f = useField(name)
-  const [openMisc, setOpenMisc] = useState(f[0].value.note);
+  const [openMisc, setOpenMisc] = useState(f[0].value?.note);
   return (
     <span
       style={{ display: "flex", flexDirection: "column", alignItems: "end" }}

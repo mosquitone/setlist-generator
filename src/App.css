@@ -24,13 +24,6 @@
   }
 }
 
-@media screen and (max-width: 480px) {
-  #mqtn_setlist {
-    transform: scale(0.5);
-    transform-origin: top center;
-  }
-}
-
 .mqtn.setlist.container {
   font-size: 10px;
   background-clip: border-box;

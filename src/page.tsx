@@ -3,6 +3,7 @@ import html2canvas from "html2canvas";
 import QR from "qrcode";
 import React, {
   ReactElement,
+  ReactNode,
   useCallback,
   useEffect,
   useMemo,
@@ -10,10 +11,54 @@ import React, {
   useState,
 } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
-import { Accordion, Button, Divider, Dropdown, Form, Grid, Header, Icon, Input, Label, List, Loader, Menu, Message, Modal, Placeholder, Popup, Segment, Transition } from "semantic-ui-react";
+import {
+  Accordion,
+  Button,
+  Divider,
+  Dropdown,
+  Form,
+  Grid,
+  Header,
+  Icon,
+  Input,
+  Label,
+  List,
+  Loader,
+  Menu,
+  Message,
+  Modal,
+  Placeholder,
+  Popup,
+  Segment,
+  StickyProps,
+  Transition,
+} from "semantic-ui-react";
 import { useSetlistManager } from "./client";
 import { SetListProxy } from "./component";
 import { SetList, SetListSchema, SetListValue } from "./model";
+import ReactDOM from "react-dom/client";
+import { image } from "html2canvas/dist/types/css/types/image";
+
+async function makeImage(node: ReactNode) {
+  const el = document.createElement("div");
+  el.style.width = "fit-content";
+  el.style.position = "absolute"
+  el.style.top = "-100%"
+  document.body.appendChild(el)
+  const root = ReactDOM.createRoot(el);
+  await new Promise((resolve) => {
+    root.render(<div ref={resolve}>{node}</div>);
+  });
+  const canvas = await html2canvas(el);
+  root.unmount()
+  document.body.removeChild(el)
+  const blob = await new Promise<Blob>((resolve, reject) =>
+    canvas.toBlob((b) => (b ? resolve(b) : reject()))
+  );
+  const url = URL.createObjectURL(blob);
+  const revoke = () => URL.revokeObjectURL(url);
+  return [url, revoke];
+}
 
 export const Home = () => {
   const m = useSetlistManager();
@@ -24,7 +69,7 @@ export const Home = () => {
         .reverse()
         .filter((i, m, a) => a.indexOf(i) === m)
         .map((i) => i),
-    [m],
+    [m]
   );
   const loader = useCallback(() => m.getAll(history), [m, history]);
 
@@ -65,7 +110,15 @@ export const Home = () => {
                             <List.Content as={Link} to={"/show/" + i}>
                               {i}
                               <List.Description>
-                                {data ? data[i].displayName : <Placeholder content={<Placeholder.Line></Placeholder.Line>} />}
+                                {data ? (
+                                  data[i].displayName
+                                ) : (
+                                  <Placeholder
+                                    content={
+                                      <Placeholder.Line></Placeholder.Line>
+                                    }
+                                  />
+                                )}
                               </List.Description>
                               {/* } */}
                             </List.Content>
@@ -91,13 +144,13 @@ const FormValuePersistanceManager = {
   store: (values: SetListValue) =>
     localStorage.setItem(
       FormValuePersistanceManager.KEY,
-      JSON.stringify(values),
+      JSON.stringify(values)
     ),
   restore: () =>
     FormValuePersistanceManager.canRestore()
       ? JSON.parse(
-        localStorage.getItem(FormValuePersistanceManager.KEY) as string,
-      )
+          localStorage.getItem(FormValuePersistanceManager.KEY) as string
+        )
       : null,
   clear: () => localStorage.clear(),
 };
@@ -134,7 +187,7 @@ enum RestoreStatus {
 }
 
 function PlayingField({ name }: { name: string }) {
-  const f = useField(name)
+  const f = useField(name);
   const [openMisc, setOpenMisc] = useState(f[0].value?.note);
   return (
     <span
@@ -211,7 +264,7 @@ export const CreateSetlistPage: React.FunctionComponent = withLoading(
         )}
       </>
     );
-  },
+  }
 );
 export const UpdateSetlistPage: React.FunctionComponent = withLoading(
   () => {
@@ -252,7 +305,7 @@ export const UpdateSetlistPage: React.FunctionComponent = withLoading(
         )}
       </>
     );
-  },
+  }
 );
 function SetlistForm({
   loading,
@@ -264,7 +317,7 @@ function SetlistForm({
   setlist?: SetList;
 }) {
   const [restoreStatus, setRestoreStatus] = useState<RestoreStatus>(
-    RestoreStatus.NEVER,
+    RestoreStatus.NEVER
   );
   const formContainerRef = React.createRef<HTMLDivElement>();
   useEffect(() => {
@@ -398,31 +451,45 @@ function SetlistForm({
                     label="Name"
                   />
                 </Form.Group>
-                {loading || <Accordion
-                  defaultActiveIndex={setlist && ((e) => e.date || e.openTime || e.startTime)(setlist.event) ? 0 : undefined} panels={[
-                    {
-                      key: "option", title: "Option", content:
-                      {
-                        content: <Form.Group widths={"equal"} >
-                          <CreateFormInput
-                            name="event.date"
-                            placeholder="yyyy-mm-dd"
-                            label="Date"
-                          />
-                          <CreateFormInput
-                            name="event.openTime"
-                            placeholder="hh:mm"
-                            label="Open"
-                          />
-                          <CreateFormInput
-                            name="event.startTime"
-                            placeholder="hh:mm"
-                            label="Start"
-                          />
-                        </Form.Group>
-                      }
+                {loading || (
+                  <Accordion
+                    defaultActiveIndex={
+                      setlist &&
+                      ((e) => e.date || e.openTime || e.startTime)(
+                        setlist.event
+                      )
+                        ? 0
+                        : undefined
                     }
-                  ]} />}
+                    panels={[
+                      {
+                        key: "option",
+                        title: "Option",
+                        content: {
+                          content: (
+                            <Form.Group widths={"equal"}>
+                              <CreateFormInput
+                                name="event.date"
+                                placeholder="yyyy-mm-dd"
+                                label="Date"
+                              />
+                              <CreateFormInput
+                                name="event.openTime"
+                                placeholder="hh:mm"
+                                label="Open"
+                              />
+                              <CreateFormInput
+                                name="event.startTime"
+                                placeholder="hh:mm"
+                                label="Start"
+                              />
+                            </Form.Group>
+                          ),
+                        },
+                      },
+                    ]}
+                  />
+                )}
               </Segment>
               <Header as="h2">Playings</Header>
               <Segment>
@@ -602,11 +669,12 @@ const SharePanel: React.FunctionComponent<{
                       text:
                         message +
                         "\n" +
-                        `${signature
-                          ? typeof signature === "string"
-                            ? signature
-                            : "mosquitone setlist generator"
-                          : ""
+                        `${
+                          signature
+                            ? typeof signature === "string"
+                              ? signature
+                              : "mosquitone setlist generator"
+                            : ""
                         }`,
                     });
                   }}
@@ -624,16 +692,24 @@ export const ShowSetlist = withLoading(
   (_: {}) => {
     const { id } = useParams();
 
-
     const manager = useSetlistManager();
 
     return useCallback(async () => {
-      const qrCodeURL = await QR.toDataURL(window.location.href)
+      const qrCodeURL = await QR.toDataURL(window.location.href);
       const setlist = await manager.get(id!);
+
+      const images = await Promise.all(
+        ["basic", "mqtn", "basic"].map((t) =>
+          makeImage(
+            <SetListProxy qrCodeURL={qrCodeURL} {...setlist} theme={t as any}/>
+          ).then((i) => [t, i[0]] as [string, string])
+        )
+      );
+
       return {
-        qrCodeURL,
         setlist,
         manager,
+        images: images.reduce<any>((t, [theme, image]) => ({...t, [theme]: image}), {}),
         id: id as string,
       };
     }, [manager, id]);
@@ -643,13 +719,13 @@ export const ShowSetlist = withLoading(
 
     const setlistSelectorId = "mqtn_setlist";
     const currentURL = window.location.href;
-    const imageURL = `${window.location.origin
-      }/api/print?url=${encodeURIComponent(
-        currentURL,
-      )}&selector=${encodeURIComponent(
-        `#${setlistSelectorId}`,
-      )}&filename=mosquitone_setlist&type=png`;
-
+    const imageURL = `${
+      window.location.origin
+    }/api/print?url=${encodeURIComponent(
+      currentURL
+    )}&selector=${encodeURIComponent(
+      `#${setlistSelectorId}`
+    )}&filename=mosquitone_setlist&type=png`;
 
     const sharableURLs = [
       {
@@ -668,8 +744,6 @@ export const ShowSetlist = withLoading(
       }
     }, [data]);
 
-    const download = useDownload();
-
     return (
       <>
         <Message className="mqtn unprint">
@@ -686,8 +760,9 @@ export const ShowSetlist = withLoading(
           ></Menu.Item>
           <Menu.Item
             name="download"
-            disabled={loading || download.state.loading}
-            onClick={download.handleDownload}
+            disabled={loading}
+            as={"a"}
+            href={data && data.images[theme || "basic"] }
           ></Menu.Item>
           <Modal trigger={<Menu.Item name="share"></Menu.Item>}>
             <Modal.Header>
@@ -769,13 +844,7 @@ export const ShowSetlist = withLoading(
                     alignItems: "center",
                   }}
                 >
-                  <div id={setlistSelectorId} ref={(r) => download.ref.current = r}>
-                    <SetListProxy
-                      {...data.setlist}
-                      qrCodeURL={"" + data.qrCodeURL}
-                      theme={theme || "basic"}
-                    ></SetListProxy>
-                  </div>
+                  {data &&<img src={data?.images[theme || "basic"]} style={{width: "100%"}}></img>}
                 </div>
               </>
             )
@@ -783,7 +852,7 @@ export const ShowSetlist = withLoading(
         </div>
       </>
     );
-  },
+  }
 );
 
 export const NotFound = () => {
@@ -833,8 +902,8 @@ function withLoading<Props extends React.PropsWithChildren, LoadData>(
       error: any;
       data: LoadData | null;
       reload: () => void;
-    },
-  ) => ReactElement,
+    }
+  ) => ReactElement
 ): React.FunctionComponent<Props> {
   return function (props: Props) {
     const loader = loaderFactory(props);
@@ -843,36 +912,42 @@ function withLoading<Props extends React.PropsWithChildren, LoadData>(
   };
 }
 
-
 function useDownload() {
-
   const ref = useRef<HTMLElement | null>(null);
-  const [state, setState] = useState<{ loading: boolean, error: any, }>({ loading: false, error: null })
+  const [state, setState] = useState<{ loading: boolean; error: any }>({
+    loading: false,
+    error: null,
+  });
 
   const handleDownload = useCallback(() => {
     if (!ref.current) {
-      return
+      return;
     }
     const element = ref.current;
     (async () => {
-      setState({ loading: true, error: null })
+      setState({ loading: true, error: null });
       const canvas = await html2canvas(element);
-      const blob = await new Promise<Blob>((r, j) => canvas.toBlob((b) => b ? r(b) : j(b)))
+      const blob = await new Promise<Blob>((r, j) =>
+        canvas.toBlob((b) => (b ? r(b) : j(b)))
+      );
       const url = URL.createObjectURL(blob);
       const anchor = document.createElement("a");
       anchor.target = "_blank";
-      anchor.download = "mosquitone_setlist"
+      anchor.download = "mosquitone_setlist";
       anchor.href = url;
       anchor.click();
       URL.revokeObjectURL(url);
-      setState({ loading: false, error: null })
-    })().catch(e => setState(state => ({ ...state, error: e }))).finally(() => { setState(state => ({ ...state, loading: false })) })
-  }, [ref])
+      setState({ loading: false, error: null });
+    })()
+      .catch((e) => setState((state) => ({ ...state, error: e })))
+      .finally(() => {
+        setState((state) => ({ ...state, loading: false }));
+      });
+  }, [ref]);
 
   return {
     state,
     ref,
-    handleDownload
-  }
-
+    handleDownload,
+  };
 }

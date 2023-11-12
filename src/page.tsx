@@ -49,7 +49,8 @@ async function makeImage(node: ReactNode) {
   await new Promise((resolve) => {
     root.render(<div ref={resolve}>{node}</div>);
   });
-  const canvas = await html2canvas(el, {scale: 2});
+  await new Promise(r => setTimeout(r, 1000))
+  const canvas = await html2canvas(el, {scale: 2, imageTimeout: 0});
   root.unmount()
   document.body.removeChild(el)
   const blob = await new Promise<Blob>((resolve, reject) =>

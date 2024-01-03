@@ -10,6 +10,7 @@ import React, {
   useRef,
   useState,
 } from "react";
+import ReactDOM from "react-dom/client";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   Accordion,
@@ -30,14 +31,11 @@ import {
   Placeholder,
   Popup,
   Segment,
-  StickyProps,
-  Transition,
+  Transition
 } from "semantic-ui-react";
 import { useSetlistManager } from "./client";
 import { SetListProxy } from "./component";
 import { SetList, SetListSchema, SetListValue } from "./model";
-import ReactDOM from "react-dom/client";
-import { image } from "html2canvas/dist/types/css/types/image";
 
 async function makeImage(node: ReactNode) {
   const el = document.createElement("div");
@@ -49,7 +47,7 @@ async function makeImage(node: ReactNode) {
   await new Promise((resolve) => {
     root.render(<div ref={resolve}>{node}</div>);
   });
-  const canvas = await html2canvas(el, {onclone: ()  => {  return new Promise(r => setTimeout(r, 500))} });
+  const canvas = await html2canvas(el, { onclone: () => { return new Promise(r => setTimeout(r, 500)) } });
   root.unmount()
   document.body.removeChild(el)
   const blob = await new Promise<Blob>((resolve, reject) =>
@@ -149,8 +147,8 @@ const FormValuePersistanceManager = {
   restore: () =>
     FormValuePersistanceManager.canRestore()
       ? JSON.parse(
-          localStorage.getItem(FormValuePersistanceManager.KEY) as string
-        )
+        localStorage.getItem(FormValuePersistanceManager.KEY) as string
+      )
       : null,
   clear: () => localStorage.clear(),
 };
@@ -278,6 +276,32 @@ export const UpdateSetlistPage: React.FunctionComponent = withLoading(
   (_, { loading, data, error }) => {
     const navigate = useNavigate();
 
+    const [confirmOverride, setConfirmOverride] = useState<{ confirm: boolean, setlist: SetListValue | null, resolver: null | (() => void) }>({ confirm: false, setlist: null, resolver: null });
+    const handleTrySubmit = useCallback(async (v: SetListValue, operation: "update" | "create" = "update", forceOverride: boolean = false) => {
+      if (!data) {
+        return
+      }
+      setConfirmOverride(a => ({ ...a, confirm: false }))
+      if (operation === "update") {
+        if (data?.setlist.band.name !== v.band.name && !forceOverride) {
+          return new Promise<void>(r => {
+            setConfirmOverride({
+              confirm: true,
+              setlist: v,
+              resolver: () => r()
+            });
+          })
+        }
+        await data?.manager.update(data.id!, v)
+        confirmOverride.resolver?.()
+        navigate(`/show/${data?.id}`);
+      }
+      if (operation === "create") {
+        const id = await data?.manager.create(v)
+        navigate(`/show/${id}`);
+      }
+    }, [data])
+
     return (
       <>
         <Header>
@@ -290,14 +314,32 @@ export const UpdateSetlistPage: React.FunctionComponent = withLoading(
             </span>
           </Header.Subheader>
         </Header>{" "}
+        <Modal open={confirmOverride.confirm} header="Confirm override" closeOnDimmerClick content={{
+          content:
+            <Segment basic>
+              <p>
+                You changed band name from <code>{data?.setlist.band.name}</code> to <code>{confirmOverride.setlist?.band.name}</code>.
+              </p>
+              <p>
+                Maybe you intended to create new setlist?
+              </p>
+              <p>
+                Please confirm to override band name.
+              </p>
+            </Segment>
+        }} actions={{
+          content: <>
+            <Button primary content="I'm sure(update setlist)" onClick={() => { return handleTrySubmit(confirmOverride.setlist!, "update", true) }} />
+            <Button secondary content="I want to create new setlist(create new setlist)" onClick={() => { return handleTrySubmit(confirmOverride.setlist!, "create") }} />
+            <Button content="cancel" onClick={(e => { confirmOverride.resolver?.(); setConfirmOverride({ confirm: false, setlist: null, resolver: null }) })} />
+          </>
+        }} closeOnEscape />
         {error ? (
           <Message error content={error}></Message>
         ) : (
           <SetlistForm
             onSubmit={async (v) => {
-              return data?.manager.update(data?.id!, v).then((_) => {
-                navigate(`/show/${data?.id}`);
-              });
+              return handleTrySubmit(v, "update")
             }}
             loading={loading}
             setlist={data?.setlist}
@@ -455,9 +497,9 @@ function SetlistForm({
                   <Accordion
                     defaultActiveIndex={
                       setlist &&
-                      ((e) => e.date || e.openTime || e.startTime)(
-                        setlist.event
-                      )
+                        ((e) => e.date || e.openTime || e.startTime)(
+                          setlist.event
+                        )
                         ? 0
                         : undefined
                     }
@@ -669,12 +711,11 @@ const SharePanel: React.FunctionComponent<{
                       text:
                         message +
                         "\n" +
-                        `${
-                          signature
-                            ? typeof signature === "string"
-                              ? signature
-                              : "mosquitone setlist generator"
-                            : ""
+                        `${signature
+                          ? typeof signature === "string"
+                            ? signature
+                            : "mosquitone setlist generator"
+                          : ""
                         }`,
                     });
                   }}
@@ -701,7 +742,7 @@ export const ShowSetlist = withLoading(
       const images = await Promise.all(
         ["basic", "mqtn", "basic"].map((t) =>
           makeImage(
-            <SetListProxy qrCodeURL={qrCodeURL} {...setlist} theme={t as any}/>
+            <SetListProxy qrCodeURL={qrCodeURL} {...setlist} theme={t as any} />
           ).then((i) => [t, i[0]] as [string, string])
         )
       );
@@ -709,7 +750,7 @@ export const ShowSetlist = withLoading(
       return {
         setlist,
         manager,
-        images: images.reduce<any>((t, [theme, image]) => ({...t, [theme]: image}), {}),
+        images: images.reduce<any>((t, [theme, image]) => ({ ...t, [theme]: image }), {}),
         id: id as string,
       };
     }, [manager, id]);
@@ -719,13 +760,12 @@ export const ShowSetlist = withLoading(
 
     const setlistSelectorId = "mqtn_setlist";
     const currentURL = window.location.href;
-    const imageURL = `${
-      window.location.origin
-    }/api/print?url=${encodeURIComponent(
-      currentURL
-    )}&selector=${encodeURIComponent(
-      `#${setlistSelectorId}`
-    )}&filename=mosquitone_setlist&type=png`;
+    const imageURL = `${window.location.origin
+      }/api/print?url=${encodeURIComponent(
+        currentURL
+      )}&selector=${encodeURIComponent(
+        `#${setlistSelectorId}`
+      )}&filename=mosquitone_setlist&type=png`;
 
     const sharableURLs = [
       {
@@ -762,7 +802,7 @@ export const ShowSetlist = withLoading(
             name="download"
             disabled={loading}
             as={"a"}
-            href={data && data.images[theme || "basic"] }
+            href={data && data.images[theme || "basic"]}
           ></Menu.Item>
           <Modal trigger={<Menu.Item name="share"></Menu.Item>}>
             <Modal.Header>
@@ -844,7 +884,7 @@ export const ShowSetlist = withLoading(
                     alignItems: "center",
                   }}
                 >
-                  {data &&<img src={data?.images[theme || "basic"]} style={{width: "100%"}}></img>}
+                  {data && <img src={data?.images[theme || "basic"]} style={{ width: "100%" }}></img>}
                 </div>
               </>
             )

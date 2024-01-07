@@ -40,7 +40,7 @@ import { SetList, SetListSchema, SetListValue } from "./model";
 async function makeImage(node: ReactNode) {
   const el = document.createElement("div");
   el.style.width = "fit-content";
-  el.style.position = "absolute"
+  el.style.position = "fixed"
   el.style.bottom = "-100%"
   document.body.appendChild(el)
   const root = ReactDOM.createRoot(el);
@@ -314,7 +314,7 @@ export const UpdateSetlistPage: React.FunctionComponent = withLoading(
             </span>
           </Header.Subheader>
         </Header>{" "}
-        <Modal open={confirmOverride.confirm} header="Confirm override" closeOnDimmerClick content={{
+        <Modal open={confirmOverride.confirm} header={{ content: "Confirm override" }} closeOnDimmerClick content={{
           content:
             <Segment basic>
               <p>
@@ -329,8 +329,8 @@ export const UpdateSetlistPage: React.FunctionComponent = withLoading(
             </Segment>
         }} actions={{
           content: <>
-            <Button primary content="I'm sure(update setlist)" onClick={() => { return handleTrySubmit(confirmOverride.setlist!, "update", true) }} />
-            <Button secondary content="I want to create new setlist(create new setlist)" onClick={() => { return handleTrySubmit(confirmOverride.setlist!, "create") }} />
+            <Button className="blue" content="I'm sure(update setlist)" onClick={() => { return handleTrySubmit(confirmOverride.setlist!, "update", true) }} />
+            <Button className="green" content="I want to create new setlist(create new setlist)" onClick={() => { return handleTrySubmit(confirmOverride.setlist!, "create") }} />
             <Button content="cancel" onClick={(e => { confirmOverride.resolver?.(); setConfirmOverride({ confirm: false, setlist: null, resolver: null }) })} />
           </>
         }} closeOnEscape />

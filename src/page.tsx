@@ -41,7 +41,7 @@ async function makeImage(node: ReactNode) {
   const el = document.createElement("div");
   el.style.width = "fit-content";
   el.style.position = "absolute"
-  el.style.top = "-100%"
+  el.style.bottom = "-100%"
   document.body.appendChild(el)
   const root = ReactDOM.createRoot(el);
   await new Promise((resolve) => {

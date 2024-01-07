@@ -789,7 +789,7 @@ export const ShowSetlist = withLoading(
         <Message className="mqtn unprint">
           <Message.Header as="h1">Setlist Generated !</Message.Header>
         </Message>
-        <Menu className="mqtn unprint">
+        <Menu className="mqtn unprint" disable={!data}>
           <Menu.Item
             onClick={() =>
               navigate({

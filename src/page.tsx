@@ -789,10 +789,11 @@ export const ShowSetlist = withLoading(
         <Message className="mqtn unprint">
           <Message.Header as="h1">Setlist Generated !</Message.Header>
         </Message>
-        <Menu className="mqtn unprint" disable={!data}>
+        <Menu className="mqtn unprint">
           <Menu.Item
+            disabled={loading}
             onClick={() =>
-              navigate({
+              loading || navigate({
                 pathname: `/update/${data?.id}`,
               })
             }

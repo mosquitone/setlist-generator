@@ -1,40 +1,26 @@
 {
   "name": "setlist-generator",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "dependencies": {
-    "@testing-library/jest-dom": "^5.16.5",
-    "@testing-library/react": "^14.0.0",
-    "@testing-library/user-event": "^14.4.3",
-    "@types/jest": "^29.5.2",
-    "@types/node": "^20.3.3",
-    "@types/puppeteer": "^5.4.7",
-    "@types/qrcode": "^1.5.1",
-    "@types/react": "^18.2.14",
-    "@types/react-dom": "^18.2.6",
-    "@types/react-router-dom": "^5.3.3",
-    "@types/yup": "^0.29.14",
-    "@vercel/kv": "^0.2.2",
-    "@vercel/node": "^2.15.3",
+    "@vercel/kv": "^1.0.1",
+    "@vercel/node": "^3.0.20",
     "buffer": "^6.0.3",
-    "formik": "^2.4.2",
+    "formik": "^2.4.5",
     "html2canvas": "^1.4.1",
-    "puppeteer-core": "^20.7.4",
+    "puppeteer-core": "^22.3.0",
     "qrcode": "^1.5.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-router-dom": "^6.14.1",
-    "react-scripts": "5.0.1",
+    "react-router-dom": "^6.22.2",
     "semantic-ui-css": "^2.5.0",
-    "semantic-ui-react": "^2.1.4",
-    "typescript": "^5.1.6",
-    "yup": "^1.2.0"
+    "semantic-ui-react": "^2.1.5",
+    "yup": "^1.3.3"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "start": "vite",
+    "develop": "vercel dev",
+    "build": "vite build"
   },
   "type": "module",
   "eslintConfig": {
@@ -51,5 +37,25 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.24",
+    "@types/puppeteer": "^5.4.7",
+    "@types/qrcode": "^1.5.5",
+    "@types/react": "^18.2.61",
+    "@types/react-dom": "^18.2.19",
+    "@types/react-router-dom": "^5.3.3",
+    "@types/yup": "^0.29.14",
+    "@typescript-eslint/eslint-plugin": "^7.1.0",
+    "@typescript-eslint/parser": "^7.1.0",
+    "@vitejs/plugin-react": "^4.2.1",
+    "browserslist": "^4.23.0",
+    "browserslist-to-esbuild": "^2.1.1",
+    "eslint": "^8.57.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.5",
+    "typescript": "^5.3.3",
+    "vercel": "^33.5.3",
+    "vite": "^5.1.4"
   }
 }

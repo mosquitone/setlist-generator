@@ -103,13 +103,13 @@ export const Home = () => {
                   content: {
                     content: (
                       <List link>
-                        {history.map((i) => (
+                        {history.filter(i => !data || data[i] != null).map((i) => (
                           <List.Item key={i}>
                             <List.Content as={Link} to={"/show/" + i}>
                               {i}
                               <List.Description>
                                 {data ? (
-                                  data[i].displayName
+                                  data[i]?.displayName || "NotFound"
                                 ) : (
                                   <Placeholder
                                     content={
@@ -269,8 +269,13 @@ export const UpdateSetlistPage: React.FunctionComponent = withLoading(
     const manager = useSetlistManager();
     const { id } = useParams();
 
+    const navigate = useNavigate();
     return useCallback(async () => {
-      return { setlist: await manager.get(id!), manager, id };
+      const data = { setlist: await manager.get(id!), manager, id };
+      if (!data.setlist) {
+        navigate("/404")
+      }
+      return data;
     }, [manager, id]);
   },
   (_, { loading, data, error }) => {
@@ -735,9 +740,16 @@ export const ShowSetlist = withLoading(
 
     const manager = useSetlistManager();
 
+    const navigate = //. 
+      useNavigate();
     return useCallback(async () => {
       const qrCodeURL = await QR.toDataURL(window.location.href);
       const setlist = await manager.get(id!);
+      if (!setlist) {
+        navigate("/404")
+      }
+
+
 
       const images = await Promise.all(
         ["basic", "mqtn", "basic"].map((t) =>

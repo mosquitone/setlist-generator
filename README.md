@@ -1,26 +1,30 @@
-# mosquitone setlist generator
+# React + TypeScript + Vite
 
-create setlist for mosquitone show.
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-## Setup and build
+Currently, two official plugins are available:
 
-1. Checkout this repo.
-2. Run `yarn` to install dependencies.
-3. Run `yarn start` to launch development server.
-4. Open browser to `http://localhost:3000` then you can vew setlist-generator.
-4. Edit source which you want to change.
-5. Run `yarn build` to build static assets.
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
 
-## Language, Framework, Library
+## Expanding the ESLint configuration
 
-- Language: [Typescript](https://www.typescriptlang.org/)
-- Framework: [React](https://reactjs.org/) via [create-react-app](https://github.com/facebook/create-react-app)
-- Component: [Semantic Ui React](https://react.semantic-ui.com/)
-- Library: 
-    - Routing: [react-router-dom](https://reacttraining.com/react-router/web/guides/quick-start)
-    - Form Control: [formik](https://github.com/jaredpalmer/formik)
-    - Form Validation: [Yup](https://github.com/jquense/yup)
+If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
 
-## Release
+- Configure the top-level `parserOptions` property like this:
 
-mosquitone setlist generator is hosted on [now by ZEIT](https://zeit.co/).
+```js
+export default {
+  // other rules...
+  parserOptions: {
+    ecmaVersion: 'latest',
+    sourceType: 'module',
+    project: ['./tsconfig.json', './tsconfig.node.json'],
+    tsconfigRootDir: __dirname,
+  },
+}
+```
+
+- Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
+- Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
+- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list

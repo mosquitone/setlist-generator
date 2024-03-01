@@ -1,4 +1,3 @@
-import React from "react";
 import { Link, Route, Routes, useLocation } from "react-router-dom";
 import { Container, Grid } from "semantic-ui-react";
 import "./App.css";

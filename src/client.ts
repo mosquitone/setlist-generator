@@ -23,14 +23,14 @@ class SetlistManager {
     return res.json();
   }
 
-  public async get(id: SetListIdentifier): Promise<SetList> {
+  public async get(id: SetListIdentifier): Promise<SetList | null> {
     return (await this.getAll([id]))[id]
   }
 
-  public async getAll(ids: SetListIdentifier[]): Promise<{ [key: SetListIdentifier]: SetList }> {
+  public async getAll(ids: SetListIdentifier[]): Promise<{ [key: SetListIdentifier]: SetList | null}> {
     const searh = new URLSearchParams();
     ids.forEach(i => searh.append("id", i));
-    return (await this.callAPI<SetListValue[]>("?" + searh.toString())).reduce((o, s, i) => ({ ...o, [ids[i]]: { ...s, get displayName() { return `${this.band.name}/${this.event.name}` } } }), {});
+    return (await this.callAPI<SetListValue[]>("?" + searh.toString())).reduce((o, s, i) => ({ ...o, [ids[i]]: s ? { ...s, get displayName() { return `${this.band.name}/${this.event.name}` } } : null }), {});
   }
   public async create(value: SetListValue): Promise<SetListIdentifier> {
     return this.callAPI("", { method: "post" }, value);

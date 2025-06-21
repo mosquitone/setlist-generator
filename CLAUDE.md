@@ -40,11 +40,12 @@ This is a React-based setlist generator application for music bands. Users can c
 
 ### Key Application Features
 1. **Setlist Management**: Create, update, view setlists with band info and song lists
-2. **Themes**: Two display themes - "mqtn" (mosquitone) and "basic"
+2. **Themes**: Four display themes - "mqtn" (mosquitone), "basic", "minimal", and "mqtn2" (mosquitone 2.0)
 3. **QR Codes**: Auto-generated QR codes for sharing setlists
 4. **Image Export**: html2canvas integration for downloading setlist images
 5. **History Tracking**: localStorage-based history of created setlists
 6. **Form Persistence**: Auto-saves form data to prevent data loss
+7. **Debug Mode**: Development-only debug functionality for theme testing
 
 ## File Structure & Key Components
 
@@ -52,7 +53,7 @@ This is a React-based setlist generator application for music bands. Users can c
 - `src/client.ts`: SetlistManager class (API client) and React context provider
 - `src/model.ts`: TypeScript types and Yup validation schemas
 - `src/page.tsx`: All page components (Home, Create, Update, Show, NotFound)
-- `src/component.tsx`: Setlist display components (MQTNSetlist, BasicSetlist)
+- `src/component.tsx`: Setlist display components (MQTNSetlist, BasicSetlist, MinimalSetlist, Mqtn2Setlist)
 - `api/setlist.ts`: Vercel serverless API endpoint
 
 ### Data Models
@@ -63,7 +64,7 @@ This is a React-based setlist generator application for music bands. Users can c
   band: { name: string },
   event: { name: string, date?: string, openTime?: string, startTime?: string },
   playings: Array<{ _id: string, title: string, note: string }>,
-  theme: "mqtn" | "basic"
+  theme: "mqtn" | "basic" | "minimal" | "mqtn2"
 }
 ```
 
@@ -144,5 +145,27 @@ await manager.update(id, value) // Update existing setlist
 ### Component Theme Pattern
 ```typescript
 // Theme-aware component rendering
-const setlistComponent = theme === "mqtn" ? <MQTNSetlist /> : <BasicSetlist />
+switch (theme) {
+  case "mqtn": return <MQTNSetlist />;
+  case "basic": return <BasicSetlist />;
+  case "minimal": return <MinimalSetlist />;
+  case "mqtn2": return <Mqtn2Setlist />;
+}
 ```
+
+## Theme Specifications
+
+### mqtn2 (Mosquitone 2.0) Theme
+- **Design Philosophy**: Modern dark theme with glassmorphism effects
+- **Background**: Dark gradient (black to navy blue)
+- **Typography**: Dynamic font sizing based on song count (up to 3.5rem for short setlists)
+- **Layout**: A4-optimized with flex-based height distribution
+- **Visual Effects**: Subtle background patterns, backdrop blur, text shadows
+- **Logo Integration**: Mosquitone white logo with drop shadow
+- **Accessibility**: High contrast text on dark background for low-light environments
+
+### Debug Mode
+- **Availability**: Development environment only (`import.meta.env.DEV`)
+- **Functionality**: Live DOM preview of setlist components before image generation
+- **Usage**: Toggle via Debug button in show page menu
+- **Scaling**: 0.8x scale for optimal viewing in browser

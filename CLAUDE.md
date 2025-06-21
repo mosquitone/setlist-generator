@@ -177,11 +177,21 @@ switch (theme) {
 
 ## Theme Specifications
 
+### minimal Theme
+- **Design Philosophy**: Clean, high-contrast black-and-white design optimized for readability
+- **Background**: Pure white (#ffffff) with black borders and text
+- **Typography**: Bold, maximized font sizing (up to 3.5rem for ≤5 songs, scaling down to 1.6rem)
+- **Layout**: A4 paper dimensions (210mm × 297mm) with 15mm padding and space-around distribution
+- **Visual Style**: 2px solid black borders, numbered song list with bold text
+- **Font Weights**: All text uses bold (900) for maximum visibility
+- **Spacing**: Flexible vertical spacing with songs distributed evenly across available space
+- **QR Code**: Fixed positioning at bottom with black border
+
 ### mqtn2 (Mosquitone 2.0) Theme
 - **Design Philosophy**: Modern dark theme with glassmorphism effects
 - **Background**: Dark gradient (black to navy blue)
 - **Typography**: Dynamic font sizing based on song count (up to 3.5rem for short setlists)
-- **Layout**: A4-optimized with flex-based height distribution
+- **Layout**: A4 paper dimensions (210mm × 297mm) with flex-based height distribution
 - **Visual Effects**: Subtle background patterns, backdrop blur, text shadows
 - **Logo Integration**: Mosquitone white logo with drop shadow
 - **Accessibility**: High contrast text on dark background for low-light environments

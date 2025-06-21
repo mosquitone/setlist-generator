@@ -191,11 +191,13 @@ const MinimalSetlist = ({
   qrCodeURL,
 }: SetList & { qrCodeURL: string }) => {
   const getDynamicFontSize = (itemCount: number) => {
-    if (itemCount <= 10) return "1.8rem";
-    if (itemCount <= 15) return "1.5rem";
-    if (itemCount <= 20) return "1.3rem";
-    if (itemCount <= 25) return "1.1rem";
-    return "1rem";
+    if (itemCount <= 5) return "3.5rem";
+    if (itemCount <= 8) return "3.2rem";
+    if (itemCount <= 12) return "2.8rem";
+    if (itemCount <= 16) return "2.4rem";
+    if (itemCount <= 20) return "2.1rem";
+    if (itemCount <= 25) return "1.8rem";
+    return "1.6rem";
   };
 
   return (
@@ -205,17 +207,21 @@ const MinimalSetlist = ({
         background: "#ffffff",
         color: "#333333",
         fontFamily: "system-ui, -apple-system, sans-serif",
-        maxWidth: "800px",
+        width: "210mm",
+        height: "297mm",
         margin: "0 auto",
-        padding: "2rem",
+        padding: "15mm",
         border: "2px solid #000000",
         borderRadius: "0",
+        boxSizing: "border-box",
+        display: "flex",
+        flexDirection: "column",
       }}
     >
-      <div style={{ textAlign: "center", marginBottom: "2rem" }}>
+      <div style={{ textAlign: "center", marginBottom: "2rem", flexShrink: 0 }}>
         <h1
           style={{
-            fontSize: "2.5rem",
+            fontSize: "4.5rem",
             fontWeight: "900",
             margin: "0 0 0.5rem 0",
             textTransform: "uppercase",
@@ -226,7 +232,7 @@ const MinimalSetlist = ({
         </h1>
         <h2
           style={{
-            fontSize: "1.5rem",
+            fontSize: "2.8rem",
             fontWeight: "400",
             margin: "0 0 1rem 0",
             textTransform: "uppercase",
@@ -236,10 +242,10 @@ const MinimalSetlist = ({
           {event.name}
         </h2>
         {event.date && (
-          <p style={{ fontSize: "1rem", margin: "0.5rem 0" }}>{event.date}</p>
+          <p style={{ fontSize: "1.8rem", margin: "0.5rem 0" }}>{event.date}</p>
         )}
         {(event.openTime || event.startTime) && (
-          <p style={{ fontSize: "1rem", margin: "0.5rem 0" }}>
+          <p style={{ fontSize: "1.8rem", margin: "0.5rem 0" }}>
             {event.openTime && `OPEN ${event.openTime}`}
             {event.openTime && event.startTime && " / "}
             {event.startTime && `START ${event.startTime}`}
@@ -247,12 +253,17 @@ const MinimalSetlist = ({
         )}
       </div>
 
-      <div style={{ marginBottom: "2rem" }}>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
         <div
           style={{
             borderTop: "3px solid #000000",
             borderBottom: "1px solid #000000",
             padding: "1rem 0",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "space-around",
+            flex: 1,
+            minHeight: "0",
           }}
         >
           {playings.map((playing, idx) => (
@@ -261,30 +272,30 @@ const MinimalSetlist = ({
               style={{
                 display: "flex",
                 alignItems: "baseline",
-                marginBottom: "0.8rem",
                 fontSize: getDynamicFontSize(playings.length),
               }}
             >
               <span
                 style={{
-                  minWidth: "3rem",
-                  fontWeight: "bold",
-                  marginRight: "1rem",
-                  fontSize: "1rem",
+                  minWidth: "4rem",
+                  fontWeight: "900",
+                  marginRight: "1.5rem",
+                  fontSize: "1.8rem",
                 }}
               >
                 {String(idx + 1).padStart(2, "0")}.
               </span>
-              <span style={{ flex: 1, fontWeight: "600" }}>
+              <span style={{ flex: 1, fontWeight: "900" }}>
                 {playing.title}
               </span>
               {playing.note && (
                 <span
                   style={{
-                    fontSize: "0.9rem",
+                    fontSize: "1.6rem",
                     color: "#666666",
                     fontStyle: "italic",
-                    marginLeft: "1rem",
+                    fontWeight: "700",
+                    marginLeft: "1.5rem",
                   }}
                 >
                   {playing.note}
@@ -295,7 +306,7 @@ const MinimalSetlist = ({
         </div>
       </div>
 
-      <div style={{ textAlign: "center" }}>
+      <div style={{ textAlign: "center", flexShrink: 0, marginTop: "1rem" }}>
         <img
           src={qrCodeURL}
           alt="QR Code for setlist"

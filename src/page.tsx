@@ -31,7 +31,7 @@ import {
   Placeholder,
   Popup,
   Segment,
-  Transition
+  Transition,
 } from "semantic-ui-react";
 import { useSetlistManager } from "./client";
 import { SetListProxy } from "./component";
@@ -40,19 +40,23 @@ import { SetList, SetListSchema, SetListValue } from "./model";
 async function makeImage(node: ReactNode) {
   const el = document.createElement("div");
   el.style.width = "fit-content";
-  el.style.position = "absolute"
-  el.style.bottom = "0"
-  el.style.transform = "translate(-100%, -100%)"
-  document.body.appendChild(el)
+  el.style.position = "absolute";
+  el.style.bottom = "0";
+  el.style.transform = "translate(-100%, -100%)";
+  document.body.appendChild(el);
   const root = ReactDOM.createRoot(el);
-  await new Promise((resolve) => {
+  await new Promise(resolve => {
     root.render(<div ref={resolve}>{node}</div>);
   });
-  const canvas = await html2canvas(el, { onclone: () => { return new Promise(r => setTimeout(r, 500)) } });
-  root.unmount()
-  document.body.removeChild(el)
+  const canvas = await html2canvas(el, {
+    onclone: () => {
+      return new Promise(r => setTimeout(r, 500));
+    },
+  });
+  root.unmount();
+  document.body.removeChild(el);
   const blob = await new Promise<Blob>((resolve, reject) =>
-    canvas.toBlob((b) => (b ? resolve(b) : reject()))
+    canvas.toBlob(b => (b ? resolve(b) : reject()))
   );
   const url = URL.createObjectURL(blob);
   const revoke = () => URL.revokeObjectURL(url);
@@ -67,7 +71,7 @@ export const Home = () => {
         .getHistory()
         .reverse()
         .filter((i, m, a) => a.indexOf(i) === m)
-        .map((i) => i),
+        .map(i => i),
     [m]
   );
   const loader = useCallback(() => m.getAll(history), [m, history]);
@@ -104,25 +108,27 @@ export const Home = () => {
                   content: {
                     content: (
                       <List link>
-                        {history.filter(i => !data || data[i] != null).map((i) => (
-                          <List.Item key={i}>
-                            <List.Content as={Link} to={"/show/" + i}>
-                              {i}
-                              <List.Description>
-                                {data ? (
-                                  data[i]?.displayName || "NotFound"
-                                ) : (
-                                  <Placeholder
-                                    content={
-                                      <Placeholder.Line></Placeholder.Line>
-                                    }
-                                  />
-                                )}
-                              </List.Description>
-                              {/* } */}
-                            </List.Content>
-                          </List.Item>
-                        ))}
+                        {history
+                          .filter(i => !data || data[i] != null)
+                          .map(i => (
+                            <List.Item key={i}>
+                              <List.Content as={Link} to={"/show/" + i}>
+                                {i}
+                                <List.Description>
+                                  {data ? (
+                                    data[i]?.displayName || "NotFound"
+                                  ) : (
+                                    <Placeholder
+                                      content={
+                                        <Placeholder.Line></Placeholder.Line>
+                                      }
+                                    />
+                                  )}
+                                </List.Description>
+                                {/* } */}
+                              </List.Content>
+                            </List.Item>
+                          ))}
                       </List>
                     ),
                   },
@@ -148,8 +154,8 @@ const FormValuePersistanceManager = {
   restore: () =>
     FormValuePersistanceManager.canRestore()
       ? JSON.parse(
-        localStorage.getItem(FormValuePersistanceManager.KEY) as string
-      )
+          localStorage.getItem(FormValuePersistanceManager.KEY) as string
+        )
       : null,
   clear: () => localStorage.clear(),
 };
@@ -201,7 +207,7 @@ function PlayingField({ name }: { name: string }) {
       {!openMisc ? (
         <Link
           to="_"
-          onClick={(ev) => {
+          onClick={ev => {
             ev.preventDefault();
             setOpenMisc(true);
           }}
@@ -253,7 +259,7 @@ export const CreateSetlistPage: React.FunctionComponent = withLoading(
           <Message error content={error}></Message>
         ) : (
           <SetlistForm
-            onSubmit={async (v) => {
+            onSubmit={async v => {
               const id = await data?.manager.create(v);
               navigate(`/show/${id}`);
             }}
@@ -274,7 +280,7 @@ export const UpdateSetlistPage: React.FunctionComponent = withLoading(
     return useCallback(async () => {
       const data = { setlist: await manager.get(id!), manager, id };
       if (!data.setlist) {
-        navigate("/404")
+        navigate("/404");
       }
       return data;
     }, [manager, id]);
@@ -282,31 +288,42 @@ export const UpdateSetlistPage: React.FunctionComponent = withLoading(
   (_, { loading, data, error }) => {
     const navigate = useNavigate();
 
-    const [confirmOverride, setConfirmOverride] = useState<{ confirm: boolean, setlist: SetListValue | null, resolver: null | (() => void) }>({ confirm: false, setlist: null, resolver: null });
-    const handleTrySubmit = useCallback(async (v: SetListValue, operation: "update" | "create" = "update", forceOverride: boolean = false) => {
-      if (!data) {
-        return
-      }
-      setConfirmOverride(a => ({ ...a, confirm: false }))
-      if (operation === "update") {
-        if (data?.setlist.band.name !== v.band.name && !forceOverride) {
-          return new Promise<void>(r => {
-            setConfirmOverride({
-              confirm: true,
-              setlist: v,
-              resolver: () => r()
-            });
-          })
+    const [confirmOverride, setConfirmOverride] = useState<{
+      confirm: boolean;
+      setlist: SetListValue | null;
+      resolver: null | (() => void);
+    }>({ confirm: false, setlist: null, resolver: null });
+    const handleTrySubmit = useCallback(
+      async (
+        v: SetListValue,
+        operation: "update" | "create" = "update",
+        forceOverride: boolean = false
+      ) => {
+        if (!data) {
+          return;
         }
-        await data?.manager.update(data.id!, v)
-        confirmOverride.resolver?.()
-        navigate(`/show/${data?.id}`);
-      }
-      if (operation === "create") {
-        const id = await data?.manager.create(v)
-        navigate(`/show/${id}`);
-      }
-    }, [data])
+        setConfirmOverride(a => ({ ...a, confirm: false }));
+        if (operation === "update") {
+          if (data?.setlist.band.name !== v.band.name && !forceOverride) {
+            return new Promise<void>(r => {
+              setConfirmOverride({
+                confirm: true,
+                setlist: v,
+                resolver: () => r(),
+              });
+            });
+          }
+          await data?.manager.update(data.id!, v);
+          confirmOverride.resolver?.();
+          navigate(`/show/${data?.id}`);
+        }
+        if (operation === "create") {
+          const id = await data?.manager.create(v);
+          navigate(`/show/${id}`);
+        }
+      },
+      [data]
+    );
 
     return (
       <>
@@ -320,32 +337,66 @@ export const UpdateSetlistPage: React.FunctionComponent = withLoading(
             </span>
           </Header.Subheader>
         </Header>{" "}
-        <Modal open={confirmOverride.confirm} header="Confirm override" closeOnDimmerClick content={{
-          content:
-            <Segment basic>
-              <p>
-                You changed band name from <code>{data?.setlist.band.name}</code> to <code>{confirmOverride.setlist?.band.name}</code>.
-              </p>
-              <p>
-                Maybe you intended to create new setlist?
-              </p>
-              <p>
-                Please confirm to override band name.
-              </p>
-            </Segment>
-        }} actions={{
-          content: <>
-            <Button primary content="I'm sure(update setlist)" onClick={() => { return handleTrySubmit(confirmOverride.setlist!, "update", true) }} />
-            <Button secondary content="I want to create new setlist(create new setlist)" onClick={() => { return handleTrySubmit(confirmOverride.setlist!, "create") }} />
-            <Button content="cancel" onClick={(e => { confirmOverride.resolver?.(); setConfirmOverride({ confirm: false, setlist: null, resolver: null }) })} />
-          </>
-        }} closeOnEscape />
+        <Modal
+          open={confirmOverride.confirm}
+          header="Confirm override"
+          closeOnDimmerClick
+          content={{
+            content: (
+              <Segment basic>
+                <p>
+                  You changed band name from{" "}
+                  <code>{data?.setlist.band.name}</code> to{" "}
+                  <code>{confirmOverride.setlist?.band.name}</code>.
+                </p>
+                <p>Maybe you intended to create new setlist?</p>
+                <p>Please confirm to override band name.</p>
+              </Segment>
+            ),
+          }}
+          actions={{
+            content: (
+              <>
+                <Button
+                  primary
+                  content="I'm sure(update setlist)"
+                  onClick={() => {
+                    return handleTrySubmit(
+                      confirmOverride.setlist!,
+                      "update",
+                      true
+                    );
+                  }}
+                />
+                <Button
+                  secondary
+                  content="I want to create new setlist(create new setlist)"
+                  onClick={() => {
+                    return handleTrySubmit(confirmOverride.setlist!, "create");
+                  }}
+                />
+                <Button
+                  content="cancel"
+                  onClick={e => {
+                    confirmOverride.resolver?.();
+                    setConfirmOverride({
+                      confirm: false,
+                      setlist: null,
+                      resolver: null,
+                    });
+                  }}
+                />
+              </>
+            ),
+          }}
+          closeOnEscape
+        />
         {error ? (
           <Message error content={error}></Message>
         ) : (
           <SetlistForm
-            onSubmit={async (v) => {
-              return handleTrySubmit(v, "update")
+            onSubmit={async v => {
+              return handleTrySubmit(v, "update");
             }}
             loading={loading}
             setlist={data?.setlist}
@@ -391,21 +442,21 @@ function SetlistForm({
           },
         }}
         validationSchema={SetListSchema}
-        onSubmit={(values) => {
+        onSubmit={values => {
           FormValuePersistanceManager.store(values);
           setSubmitState({ submit: true, error: null });
           onSubmit(values)
-            .catch((error) => {
-              setSubmitState((a) => ({
+            .catch(error => {
+              setSubmitState(a => ({
                 ...a,
                 error: error instanceof Error ? error.message : "unknown",
               }));
             })
             .finally(() => {
-              setSubmitState((a) => ({ ...a, submit: false }));
+              setSubmitState(a => ({ ...a, submit: false }));
             });
         }}
-        render={(formik) => (
+        render={formik => (
           <Form
             loading={loading || restoreStatus === RestoreStatus.DOING}
             error={Object.keys(formik.errors).length > 0 || !!submitState.error}
@@ -503,9 +554,7 @@ function SetlistForm({
                   <Accordion
                     defaultActiveIndex={
                       setlist &&
-                        ((e) => e.date || e.openTime || e.startTime)(
-                          setlist.event
-                        )
+                      (e => e.date || e.openTime || e.startTime)(setlist.event)
                         ? 0
                         : undefined
                     }
@@ -717,11 +766,12 @@ const SharePanel: React.FunctionComponent<{
                       text:
                         message +
                         "\n" +
-                        `${signature
-                          ? typeof signature === "string"
-                            ? signature
-                            : "mosquitone setlist generator"
-                          : ""
+                        `${
+                          signature
+                            ? typeof signature === "string"
+                              ? signature
+                              : "mosquitone setlist generator"
+                            : ""
                         }`,
                     });
                   }}
@@ -741,29 +791,29 @@ export const ShowSetlist = withLoading(
 
     const manager = useSetlistManager();
 
-    const navigate = //. 
-      useNavigate();
+    const navigate = useNavigate(); //.
     return useCallback(async () => {
       const qrCodeURL = await QR.toDataURL(window.location.href);
       const setlist = await manager.get(id!);
       if (!setlist) {
-        navigate("/404")
+        navigate("/404");
       }
 
-
-
       const images = await Promise.all(
-        ["basic", "mqtn", "minimal", "mqtn2"].map((t) =>
+        ["basic", "mqtn", "minimal", "mqtn2"].map(t =>
           makeImage(
             <SetListProxy qrCodeURL={qrCodeURL} {...setlist} theme={t as any} />
-          ).then((i) => [t, i[0]] as [string, string])
+          ).then(i => [t, i[0]] as [string, string])
         )
       );
 
       return {
         setlist,
         manager,
-        images: images.reduce<any>((t, [theme, image]) => ({ ...t, [theme]: image }), {}),
+        images: images.reduce<any>(
+          (t, [theme, image]) => ({ ...t, [theme]: image }),
+          {}
+        ),
         id: id as string,
       };
     }, [manager, id]);
@@ -773,12 +823,13 @@ export const ShowSetlist = withLoading(
 
     const setlistSelectorId = "mqtn_setlist";
     const currentURL = window.location.href;
-    const imageURL = `${window.location.origin
-      }/api/print?url=${encodeURIComponent(
-        currentURL
-      )}&selector=${encodeURIComponent(
-        `#${setlistSelectorId}`
-      )}&filename=mosquitone_setlist&type=png`;
+    const imageURL = `${
+      window.location.origin
+    }/api/print?url=${encodeURIComponent(
+      currentURL
+    )}&selector=${encodeURIComponent(
+      `#${setlistSelectorId}`
+    )}&filename=mosquitone_setlist&type=png`;
 
     const sharableURLs = [
       {
@@ -858,10 +909,7 @@ export const ShowSetlist = withLoading(
             Duplicate
           </Menu.Item>
           {import.meta.env.DEV && (
-            <Menu.Item
-              name="debug"
-              onClick={() => setShowDebug(!showDebug)}
-            >
+            <Menu.Item name="debug" onClick={() => setShowDebug(!showDebug)}>
               Debug
             </Menu.Item>
           )}
@@ -913,24 +961,29 @@ export const ShowSetlist = withLoading(
                     alignItems: "center",
                   }}
                 >
-                  {showDebug ? (
-                    data && (
-                      <div style={{ 
-                        border: "2px solid red", 
-                        margin: "1rem 0",
-                        transform: "scale(0.8)",
-                        transformOrigin: "top center"
-                      }}>
-                        <SetListProxy 
-                          qrCodeURL={qrCodeURL} 
-                          {...data.setlist} 
-                          theme={theme || data.setlist.theme} 
-                        />
-                      </div>
-                    )
-                  ) : (
-                    data && <img src={data?.images[theme || "basic"]} style={{ width: "100%" }}></img>
-                  )}
+                  {showDebug
+                    ? data && (
+                        <div
+                          style={{
+                            border: "2px solid red",
+                            margin: "1rem 0",
+                            transform: "scale(0.8)",
+                            transformOrigin: "top center",
+                          }}
+                        >
+                          <SetListProxy
+                            qrCodeURL={qrCodeURL}
+                            {...data.setlist}
+                            theme={theme || data.setlist.theme}
+                          />
+                        </div>
+                      )
+                    : data && (
+                        <img
+                          src={data?.images[theme || "basic"]}
+                          style={{ width: "100%" }}
+                        ></img>
+                      )}
                 </div>
               </>
             )
@@ -1014,7 +1067,7 @@ function useDownload() {
       setState({ loading: true, error: null });
       const canvas = await html2canvas(element);
       const blob = await new Promise<Blob>((r, j) =>
-        canvas.toBlob((b) => (b ? r(b) : j(b)))
+        canvas.toBlob(b => (b ? r(b) : j(b)))
       );
       const url = URL.createObjectURL(blob);
       const anchor = document.createElement("a");
@@ -1025,9 +1078,9 @@ function useDownload() {
       URL.revokeObjectURL(url);
       setState({ loading: false, error: null });
     })()
-      .catch((e) => setState((state) => ({ ...state, error: e })))
+      .catch(e => setState(state => ({ ...state, error: e })))
       .finally(() => {
-        setState((state) => ({ ...state, loading: false }));
+        setState(state => ({ ...state, loading: false }));
       });
   }, [ref]);
 

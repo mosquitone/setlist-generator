@@ -9,7 +9,7 @@ class SetlistManager {
   private async callAPI<V>(
     path: string = "",
     options: Parameters<typeof fetch>[1] = {},
-    body?: any,
+    body?: any
   ): Promise<V> {
     const res = await fetch(this.endpoint + path, {
       body: body ? JSON.stringify(body) : undefined,
@@ -24,13 +24,28 @@ class SetlistManager {
   }
 
   public async get(id: SetListIdentifier): Promise<SetList | null> {
-    return (await this.getAll([id]))[id]
+    return (await this.getAll([id]))[id];
   }
 
-  public async getAll(ids: SetListIdentifier[]): Promise<{ [key: SetListIdentifier]: SetList | null}> {
+  public async getAll(
+    ids: SetListIdentifier[]
+  ): Promise<{ [key: SetListIdentifier]: SetList | null }> {
     const searh = new URLSearchParams();
     ids.forEach(i => searh.append("id", i));
-    return (await this.callAPI<SetListValue[]>("?" + searh.toString())).reduce((o, s, i) => ({ ...o, [ids[i]]: s ? { ...s, get displayName() { return `${this.band.name}/${this.event.name}` } } : null }), {});
+    return (await this.callAPI<SetListValue[]>("?" + searh.toString())).reduce(
+      (o, s, i) => ({
+        ...o,
+        [ids[i]]: s
+          ? {
+              ...s,
+              get displayName() {
+                return `${this.band.name}/${this.event.name}`;
+              },
+            }
+          : null,
+      }),
+      {}
+    );
   }
   public async create(value: SetListValue): Promise<SetListIdentifier> {
     return this.callAPI("", { method: "post" }, value);
@@ -48,7 +63,7 @@ class SetlistManager {
   public pushToHistory(id: string) {
     this.storage.setItem(
       this.historyKey,
-      JSON.stringify([...this.getHistory(), id]),
+      JSON.stringify([...this.getHistory(), id])
     );
   }
 }

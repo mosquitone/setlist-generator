@@ -10,5 +10,5 @@ root.render(
     <SetlistManagerProvider>
       <App />
     </SetlistManagerProvider>
-  </BrowserRouter>,
+  </BrowserRouter>
 );

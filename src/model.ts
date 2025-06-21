@@ -21,7 +21,10 @@ export const SetListSchema = Yup.object().shape({
     startTime: Yup.string().default(""),
   }),
   playings: Yup.array().of(PlaySchema).min(1).required().default([]),
-  theme: Yup.string().required().oneOf(["mqtn", "basic", "minimal", "mqtn2"]).default("mqtn"),
+  theme: Yup.string()
+    .required()
+    .oneOf(["mqtn", "basic", "minimal", "mqtn2"])
+    .default("mqtn"),
 });
 export type SetListIdentifier = string;
 export type SetlistOptionProps = {

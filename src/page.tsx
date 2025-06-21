@@ -753,7 +753,7 @@ export const ShowSetlist = withLoading(
 
 
       const images = await Promise.all(
-        ["basic", "mqtn", "minimal"].map((t) =>
+        ["basic", "mqtn", "minimal", "mqtn2"].map((t) =>
           makeImage(
             <SetListProxy qrCodeURL={qrCodeURL} {...setlist} theme={t as any} />
           ).then((i) => [t, i[0]] as [string, string])
@@ -789,6 +789,8 @@ export const ShowSetlist = withLoading(
     const [selectedURLIndex, setSelectedURLIndex] = useState(0);
 
     const [theme, setTheme] = useState<SetList["theme"] | null>(null);
+    const [showDebug, setShowDebug] = useState(false);
+    const [qrCodeURL, setQrCodeURL] = useState("");
 
     useEffect(() => {
       if (data?.setlist) {
@@ -796,6 +798,10 @@ export const ShowSetlist = withLoading(
         data.manager.pushToHistory(data.id);
       }
     }, [data]);
+
+    useEffect(() => {
+      QR.toDataURL(window.location.href).then(setQrCodeURL);
+    }, []);
 
     return (
       <>
@@ -851,6 +857,14 @@ export const ShowSetlist = withLoading(
           >
             Duplicate
           </Menu.Item>
+          {import.meta.env.DEV && (
+            <Menu.Item
+              name="debug"
+              onClick={() => setShowDebug(!showDebug)}
+            >
+              Debug
+            </Menu.Item>
+          )}
         </Menu>
         <div>
           {error ? (
@@ -880,6 +894,7 @@ export const ShowSetlist = withLoading(
                       { value: "mqtn", text: "mosquitone" },
                       { value: "basic", text: "basic" },
                       { value: "minimal", text: "minimal" },
+                      { value: "mqtn2", text: "mosquitone 2.0" },
                     ]}
                     value={theme || ""}
                     onChange={(_, { value }) => {
@@ -898,7 +913,24 @@ export const ShowSetlist = withLoading(
                     alignItems: "center",
                   }}
                 >
-                  {data && <img src={data?.images[theme || "basic"]} style={{ width: "100%" }}></img>}
+                  {showDebug ? (
+                    data && (
+                      <div style={{ 
+                        border: "2px solid red", 
+                        margin: "1rem 0",
+                        transform: "scale(0.8)",
+                        transformOrigin: "top center"
+                      }}>
+                        <SetListProxy 
+                          qrCodeURL={qrCodeURL} 
+                          {...data.setlist} 
+                          theme={theme || data.setlist.theme} 
+                        />
+                      </div>
+                    )
+                  ) : (
+                    data && <img src={data?.images[theme || "basic"]} style={{ width: "100%" }}></img>
+                  )}
                 </div>
               </>
             )

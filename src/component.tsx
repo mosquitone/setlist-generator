@@ -11,6 +11,8 @@ export const SetListProxy: React.FunctionComponent<SetList & { qrCodeURL: string
       return <MQTNSetlist {...v} />;
     case "basic":
       return <BasicSetlist {...v} />;
+    case "minimal":
+      return <MinimalSetlist {...v} />;
     default:
       break;
   }
@@ -153,5 +155,132 @@ const BasicSetlist = ({
   </div>
   );
 }; 
+
+const MinimalSetlist = ({
+  theme,
+  band,
+  event,
+  playings,
+  qrCodeURL,
+}: SetList & { qrCodeURL: string }) => {
+  const getDynamicFontSize = (itemCount: number) => {
+    if (itemCount <= 10) return "1.8rem";
+    if (itemCount <= 15) return "1.5rem";
+    if (itemCount <= 20) return "1.3rem";
+    if (itemCount <= 25) return "1.1rem";
+    return "1rem";
+  };
+
+  return (
+    <div
+      className={`minimal setlist container theme-${theme}`}
+      style={{
+        background: "#ffffff",
+        color: "#333333",
+        fontFamily: "system-ui, -apple-system, sans-serif",
+        maxWidth: "800px",
+        margin: "0 auto",
+        padding: "2rem",
+        border: "2px solid #000000",
+        borderRadius: "0",
+      }}
+    >
+      <div style={{ textAlign: "center", marginBottom: "2rem" }}>
+        <h1
+          style={{
+            fontSize: "2.5rem",
+            fontWeight: "900",
+            margin: "0 0 0.5rem 0",
+            textTransform: "uppercase",
+            letterSpacing: "2px",
+          }}
+        >
+          {band.name}
+        </h1>
+        <h2
+          style={{
+            fontSize: "1.5rem",
+            fontWeight: "400",
+            margin: "0 0 1rem 0",
+            textTransform: "uppercase",
+            letterSpacing: "1px",
+          }}
+        >
+          {event.name}
+        </h2>
+        {event.date && (
+          <p style={{ fontSize: "1rem", margin: "0.5rem 0" }}>{event.date}</p>
+        )}
+        {(event.openTime || event.startTime) && (
+          <p style={{ fontSize: "1rem", margin: "0.5rem 0" }}>
+            {event.openTime && `OPEN ${event.openTime}`}
+            {event.openTime && event.startTime && " / "}
+            {event.startTime && `START ${event.startTime}`}
+          </p>
+        )}
+      </div>
+
+      <div style={{ marginBottom: "2rem" }}>
+        <div
+          style={{
+            borderTop: "3px solid #000000",
+            borderBottom: "1px solid #000000",
+            padding: "1rem 0",
+          }}
+        >
+          {playings.map((playing, idx) => (
+            <div
+              key={idx}
+              style={{
+                display: "flex",
+                alignItems: "baseline",
+                marginBottom: "0.8rem",
+                fontSize: getDynamicFontSize(playings.length),
+              }}
+            >
+              <span
+                style={{
+                  minWidth: "3rem",
+                  fontWeight: "bold",
+                  marginRight: "1rem",
+                  fontSize: "1rem",
+                }}
+              >
+                {String(idx + 1).padStart(2, "0")}.
+              </span>
+              <span style={{ flex: 1, fontWeight: "600" }}>
+                {playing.title}
+              </span>
+              {playing.note && (
+                <span
+                  style={{
+                    fontSize: "0.9rem",
+                    color: "#666666",
+                    fontStyle: "italic",
+                    marginLeft: "1rem",
+                  }}
+                >
+                  {playing.note}
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div style={{ textAlign: "center" }}>
+        <img
+          src={qrCodeURL}
+          alt="QR Code for setlist"
+          style={{
+            width: "80px",
+            height: "80px",
+            border: "2px solid #000000",
+          }}
+        />
+      </div>
+    </div>
+  );
+};
 
 export function captureNode(el: HTMLElement): Promise<Blob> { return new Promise(async (res, rej) => (await html2canvas(el)).toBlob(b => b ? res(b) : rej())) } 

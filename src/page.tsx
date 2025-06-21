@@ -753,7 +753,7 @@ export const ShowSetlist = withLoading(
 
 
       const images = await Promise.all(
-        ["basic", "mqtn", "basic"].map((t) =>
+        ["basic", "mqtn", "minimal"].map((t) =>
           makeImage(
             <SetListProxy qrCodeURL={qrCodeURL} {...setlist} theme={t as any} />
           ).then((i) => [t, i[0]] as [string, string])
@@ -879,6 +879,7 @@ export const ShowSetlist = withLoading(
                     options={[
                       { value: "mqtn", text: "mosquitone" },
                       { value: "basic", text: "basic" },
+                      { value: "minimal", text: "minimal" },
                     ]}
                     value={theme || ""}
                     onChange={(_, { value }) => {

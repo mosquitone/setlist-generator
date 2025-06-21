@@ -22,7 +22,18 @@ const MQTNSetlist = ({
   event,
   playings,
   qrCodeURL,
-}: SetList & { qrCodeURL: string }) => (
+}: SetList & { qrCodeURL: string }) => {
+  const getDynamicFontSize = (itemCount: number) => {
+    if (itemCount <= 8) return "2em";
+    if (itemCount <= 12) return "1.5em";
+    if (itemCount <= 16) return "1.3em";
+    if (itemCount <= 20) return "1.1em";
+    if (itemCount <= 25) return "0.95em";
+    if (itemCount <= 30) return "0.85em";
+    return "0.75em";
+  };
+
+  return (
   <div className={`mqtn setlist inverted paper container theme-${theme}`}>
     <div className={`mqtn content ui inverted paper padded segment`}>
       <div className="mqtn main ui grid">
@@ -57,7 +68,7 @@ const MQTNSetlist = ({
               >
                 {playings.map((playing, idx) => (
                   <div key={idx} className="item">
-                    <div className="content">{playing.title}</div>
+                    <div className="content" style={{ fontSize: getDynamicFontSize(playings.length) }}>{playing.title}</div>
                     <div className="description">{playing.note}</div>
                   </div>
                 ))}
@@ -68,7 +79,8 @@ const MQTNSetlist = ({
       </div>
     </div>
   </div>
-);
+  );
+};
 
 const BasicSetlist = ({
   theme,
@@ -76,7 +88,18 @@ const BasicSetlist = ({
   event,
   playings,
   qrCodeURL,
-}: SetList & { qrCodeURL: string }) => (
+}: SetList & { qrCodeURL: string }) => {
+  const getDynamicFontSize = (itemCount: number) => {
+    if (itemCount <= 8) return "2em";
+    if (itemCount <= 12) return "1.5em";
+    if (itemCount <= 16) return "1.3em";
+    if (itemCount <= 20) return "1.1em";
+    if (itemCount <= 25) return "0.95em";
+    if (itemCount <= 30) return "0.85em";
+    return "0.75em";
+  };
+
+  return (
   <div
     className={`mqtn setlist container theme-${theme}`}
     style={{ background: "#fefefe", border: "1px solid #e1e1e1" }}
@@ -117,7 +140,7 @@ const BasicSetlist = ({
               >
                 {playings.map((playing, idx) => (
                   <div key={idx} className="item">
-                    <div className="content">{playing.title}</div>
+                    <div className="content" style={{ fontSize: getDynamicFontSize(playings.length) }}>{playing.title}</div>
                     <div className="description">{playing.note}</div>
                   </div>
                 ))}
@@ -128,4 +151,7 @@ const BasicSetlist = ({
       </div>
     </div>
   </div>
-); export function captureNode(el: HTMLElement): Promise<Blob> { return new Promise(async (res, rej) => (await html2canvas(el)).toBlob(b => b ? res(b) : rej())) } 
+  );
+}; 
+
+export function captureNode(el: HTMLElement): Promise<Blob> { return new Promise(async (res, rej) => (await html2canvas(el)).toBlob(b => b ? res(b) : rej())) } 

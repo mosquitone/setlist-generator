@@ -62,7 +62,11 @@
 }
 
 .mqtn.setlist.container .list > .item .content {
-  font-size: 2em;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  line-height: 1.2;
+  max-height: 3em;
+  overflow: hidden;
 }
 
 .mqtn.setlist.container.theme-mqtn * {

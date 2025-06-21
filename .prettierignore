@@ -1,0 +1,13 @@
+build/
+dist/
+node_modules/
+coverage/
+.vercel/
+*.min.js
+*.min.css
+package-lock.json
+pnpm-lock.yaml
+public/
+test/test-results/
+test/playwright-report/
+test/coverage/

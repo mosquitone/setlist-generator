@@ -124,6 +124,39 @@ pnpm build
 - **basic**: シンプルなホワイトテーマ  
 - **minimal**: ミニマルデザイン
 
+## テスト
+
+### テスト構成
+- **単体テスト**: 40テスト（API、コンポーネント、バリデーション）
+- **E2Eテスト**: 5テスト（ユーザーフロー、フォーム検証）
+- **カバレッジ**: 80%以上のコードカバレッジ目標
+
+### テスト実行
+
+```bash
+# 単体テスト
+pnpm test              # インタラクティブモード
+pnpm test:run          # 一回実行
+pnpm test:coverage     # カバレッジレポート付き
+
+# E2Eテスト
+pnpm test:e2e          # 全ブラウザ
+pnpm test:e2e:chromium # Chromiumのみ
+pnpm test:e2e:headed   # ブラウザ表示あり
+
+# 全体テスト
+pnpm test:all          # 単体 + E2E
+pnpm test:ci           # CI/CD向け
+```
+
+### テスト技術
+- **単体テスト**: Vitest + @testing-library/react
+- **E2Eテスト**: Playwright (Chromium, Firefox, Safari)
+- **モック**: API、DOM操作、外部ライブラリ
+- **カバレッジ**: V8プロバイダー
+
+詳細なテスト情報は [`test/README.md`](test/README.md) を参照してください。
+
 ## ライセンス
 
 このプロジェクトはMITライセンスの下で公開されています。

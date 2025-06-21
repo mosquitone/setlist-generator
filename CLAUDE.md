@@ -8,10 +8,17 @@ This is a React-based setlist generator application for music bands. Users can c
 
 ## Development Commands
 
+### Core Development
 - **Start development server**: `pnpm start` (runs Vite dev server)
 - **Local development with Vercel**: `pnpm develop` (loads `.env.local` and runs `vercel dev`)
 - **Build for production**: `pnpm build` (outputs to `/build` directory)
 - **Install dependencies**: `pnpm install`
+
+### Testing Commands
+- **Unit tests**: `pnpm test` (interactive), `pnpm test:run` (once), `pnpm test:coverage` (with coverage)
+- **E2E tests**: `pnpm test:e2e` (all browsers), `pnpm test:e2e:chromium` (Chromium only), `pnpm test:e2e:headed` (visible browser)
+- **Combined testing**: `pnpm test:all` (unit + E2E), `pnpm test:ci` (CI/CD optimized)
+- **Coverage reports**: Generated in `/test/coverage/` with HTML, JSON, and text formats
 
 ## Environment Setup
 
@@ -56,6 +63,14 @@ This is a React-based setlist generator application for music bands. Users can c
 - `src/component.tsx`: Setlist display components (MQTNSetlist, BasicSetlist, MinimalSetlist, Mqtn2Setlist)
 - `api/setlist.ts`: Vercel serverless API endpoint
 
+### Test Files
+- `test/unit/setlist-manager.test.ts`: SetlistManager API client tests (8 tests)
+- `test/unit/setlist-components.test.tsx`: React component rendering tests (13 tests)
+- `test/unit/schema-validation.test.ts`: Yup schema validation tests (11 tests)
+- `test/api/setlist-endpoints.test.ts`: Vercel API endpoint tests (8 tests)
+- `test/e2e/setlist-creation-workflow.spec.ts`: Complete user workflow tests (5 tests)
+- `test/unit/unit-setup/setup.ts`: Test environment configuration
+
 ### Data Models
 ```typescript
 // Setlist structure
@@ -89,6 +104,13 @@ This is a React-based setlist generator application for music bands. Users can c
 - `vite@6.3.5`: Build tool and dev server
 - `@vitejs/plugin-react@4.5.2`: React plugin for Vite
 - `typescript@5.8.3`: TypeScript compiler
+
+### Testing Framework
+- `vitest@3.2.4`: Fast unit test runner with Vite integration
+- `@testing-library/react@16.2.0`: React testing utilities
+- `@testing-library/jest-dom@6.6.3`: Custom Jest matchers for DOM testing
+- `@playwright/test@1.53.0`: E2E testing framework with multi-browser support
+- `jsdom@26.0.5`: DOM implementation for unit tests
 
 ## Development Notes
 
@@ -169,3 +191,83 @@ switch (theme) {
 - **Functionality**: Live DOM preview of setlist components before image generation
 - **Usage**: Toggle via Debug button in show page menu
 - **Scaling**: 0.8x scale for optimal viewing in browser
+
+## Testing Strategy
+
+### Test Coverage Overview
+- **Total Tests**: 45 tests (40 unit + 5 E2E)
+- **Coverage Target**: 80% minimum across branches, functions, lines, statements
+- **Test Types**: Unit tests, API tests, component tests, E2E workflow tests
+
+### Unit Testing Approach
+1. **API Client Testing** (`setlist-manager.test.ts`): 
+   - SetlistManager class methods (get, getAll, create, update)
+   - localStorage history management
+   - Error handling and edge cases
+
+2. **Component Testing** (`setlist-components.test.tsx`):
+   - React component rendering across all themes
+   - Dynamic font sizing based on song count
+   - QR code display and image generation mocking
+   - Theme switching and responsive behavior
+
+3. **Schema Validation Testing** (`schema-validation.test.ts`):
+   - Yup schema validation for all form fields
+   - Type inference and default value handling
+   - Error cases and edge conditions
+
+4. **API Endpoint Testing** (`setlist-endpoints.test.ts`):
+   - Vercel serverless function CRUD operations
+   - Mock @vercel/kv interactions
+   - HTTP status codes and response formats
+
+### E2E Testing Approach
+**Workflow Testing** (`setlist-creation-workflow.spec.ts`):
+- Complete user journey from form input to success page
+- Form validation with error handling
+- Multi-song addition and removal
+- Theme dropdown interactions
+- Image generation and display verification
+
+### Testing Environment Configuration
+
+#### Unit Tests (Vitest)
+- **Runtime**: jsdom environment for DOM simulation
+- **Mocking**: VI.mock for external dependencies
+- **Setup**: @testing-library/jest-dom matchers
+- **Coverage**: V8 provider with HTML/JSON reports
+
+#### E2E Tests (Playwright)
+- **Browsers**: Chromium, Firefox, Safari, Mobile Chrome, Mobile Safari
+- **Mode**: Headed for development (html2canvas compatibility), headless for CI
+- **Mocking**: Route interception for API calls
+- **Timeouts**: Extended timeouts (30s) for image generation processes
+- **Artifacts**: Screenshots, traces, and HTML reports on failure
+
+### Testing Considerations
+
+#### Image Generation Testing
+- **Challenge**: html2canvas requires full DOM and Canvas API support
+- **Solution**: Headed browser mode for reliable image generation
+- **Waiting Strategy**: Multi-step verification:
+  1. Wait for loader removal
+  2. Verify blob URL generation
+  3. Confirm browser image loading with `img.complete` and `img.naturalWidth`
+
+#### API Mocking Strategy
+- **Unit Tests**: Mock fetch and external dependencies
+- **E2E Tests**: Playwright route interception with realistic responses
+- **Data Consistency**: Ensure mock data matches actual API structure
+
+#### CI/CD Integration
+- **GitHub Actions**: Automated testing on push/PR
+- **Coverage Reporting**: Codecov integration
+- **Artifact Management**: Test reports and failure screenshots
+- **Browser Support**: Chromium for CI, all browsers for local development
+
+### Maintenance Guidelines
+1. **Test Naming**: Semantic file names reflecting test purpose
+2. **Test Organization**: Logical grouping by feature/layer
+3. **Mock Management**: Keep mocks in sync with actual implementations
+4. **Performance Monitoring**: Track test execution times
+5. **Coverage Goals**: Maintain 80%+ coverage across all metrics
